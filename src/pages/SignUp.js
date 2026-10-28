@@ -1,141 +1,227 @@
-import React, { useState } from "react";
 import styled from "styled-components";
-import Button from "./Components/common/Button";
-import Input from "./components/common/Input";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Button from "../Components/common/Button";
+import Input from "../Components/common/Input";
+import AxiosApi from "../api/AxiosApi";
 
-// 1. 레이아웃 스타일
+/* ───────── 정규식 ───────── */
+// 이메일: 공백·@ 없는 문자 + @ + 도메인 + . + 2자 이상 최상위 도메인
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// 비밀번호: 8~20자, 영문 + 숫자 + 특수문자(!@#$%^&*) 각 1개 이상
+const PWD_REGEX =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
+// 이름: 한글 또는 영문 2~10자
+const NAME_REGEX = /^[가-힣a-zA-Z]{2,10}$/;
+
+/* ───────── 스타일 (Login과 동일한 레이아웃) ───────── */
 const Container = styled.div`
-  width: 450px;
-  margin: 50px auto;
-  padding: 40px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 30px;
   box-sizing: border-box;
 `;
 
-const Title = styled.h2`
-  text-align: center;
-  margin-bottom: 24px;
-  color: #333;
-`;
-
 const Form = styled.form`
+  width: 100%;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 4px;
 `;
 
-// 2. 인풋창 명부 (fields 배열)
-const fields = [
-  {
-    label: "이메일",
-    type: "email",
-    name: "email",
-    placeholder: "example@email.com",
-  },
-  {
-    label: "비밀번호",
-    type: "password",
-    name: "password",
-    placeholder: "비밀번호 입력 (6자 이상)",
-  },
-  {
-    label: "비밀번호 확인",
-    type: "password",
-    name: "confirmPassword",
-    placeholder: "비밀번호 확인",
-  },
-  { label: "이름", type: "text", name: "name", placeholder: "이름 입력" },
-  {
-    label: "전화번호",
-    type: "text",
-    name: "phone",
-    placeholder: "010-0000-0000",
-  },
-];
+const Title = styled.h1`
+  margin: 0 0 20px;
+  text-align: center;
+  font-size: 28px;
+`;
 
-const SignUp = () => {
-  // 3. 입력값과 에러를 관리하는 상태
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-    phone: "",
-  });
+// 입력창 + 메시지를 한 묶음으로
+const Field = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
-  const [errors, setErrors] = useState({});
+// 입력창 오른쪽 하단 메시지. 높이를 고정해 메시지가 생겨도 레이아웃이 흔들리지 않음
+const Message = styled.p`
+  margin: 4px 8px 0;
+  min-height: 18px;
+  text-align: right;
+  font-size: 12px;
+  color: ${({ $valid }) => ($valid ? "#2e9e4f" : "#e5484d")};
+`;
 
-  // 4. 타이핑할 때마다 값 갱신
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
+const BottomText = styled.p`
+  margin-top: 8px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
 
-  // 5. 초기화 버튼
-  const handleReset = () => {
-    setForm({
-      email: "",
-      password: "",
-      confirmPassword: "",
-      name: "",
-      phone: "",
-    });
-    setErrors({});
-  };
+  a {
+    margin-left: 6px;
+    color: orange;
+    font-weight: 700;
+    text-decoration: none;
+  }
+`;
 
-  // 6. 가입하기 제출 및 간단한 유효성 검사
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    let newErrors = {};
+const Signup = () => {
+  const [inputEmail, setInputEmail] = useState("");
+  const [inputPwd, setInputPwd] = useState("");
+  const [inputPwdCheck, setInputPwdCheck] = useState("");
+  const [inputName, setInputName] = useState("");
+  const [emailStatus, setEmailStatus] = useState("idle");
 
-    // 간단한 필수 입력 및 비밀번호 일치 검사 예시
-    if (!form.email) newErrors.email = "이메일을 입력해주세요.";
-    if (!form.password) newErrors.password = "비밀번호를 입력해주세요.";
-    if (form.password !== form.confirmPassword) {
-      newErrors.confirmPassword = "비밀번호가 일치하지 않습니다.";
+  const nav = useNavigate();
+
+  /* 유효성은 state로 따로 두지 않고 렌더링 때 계산(파생값)
+     → 비밀번호를 바꾸면 재확인 결과도 자동으로 다시 계산됨 */
+  const isEmail = EMAIL_REGEX.test(inputEmail);
+  const isPwd = PWD_REGEX.test(inputPwd);
+  const isPwdCheck = inputPwdCheck !== "" && inputPwd === inputPwdCheck;
+  const isName = NAME_REGEX.test(inputName);
+
+  /* 정규식 통과 후에만 서버에 중복 확인 요청
+     - 0.5초 디바운스: 입력이 멈췄을 때만 요청
+     - ignore 플래그: 늦게 도착한 이전 응답이 최신 결과를 덮어쓰지 않게 함 */
+  useEffect(() => {
+    if (!isEmail) {
+      setEmailStatus("idle");
+      return;
     }
-    if (!form.name) newErrors.name = "이름을 입력해주세요.";
-    if (!form.phone) newErrors.phone = "전화번호를 입력해주세요.";
 
-    setErrors(newErrors);
+    setEmailStatus("checking");
+    let ignore = false;
 
-    // 에러가 하나도 없다면 성공!
-    if (Object.keys(newErrors).length === 0) {
-      alert("회원가입이 성공적으로 완료되었습니다! 🎉");
+    const timer = setTimeout(async () => {
+      try {
+        const res = await AxiosApi.memberExist(inputEmail);
+        if (ignore) return;
+        // 서버가 '이미 존재하면 true'를 반환한다고 가정
+        setEmailStatus(res.data === true ? "duplicate" : "available");
+      } catch (err) {
+        if (!ignore) setEmailStatus("error");
+      }
+    }, 500);
+
+    return () => {
+      ignore = true;
+      clearTimeout(timer);
+    };
+  }, [inputEmail, isEmail]);
+
+  // 형식 OK + 중복 아님 이어야 최종 통과
+  const isEmailOk = isEmail && emailStatus === "available";
+  const isAllValid = isEmailOk && isPwd && isPwdCheck && isName;
+
+  // 이메일 메시지 문구
+  const getEmailMessage = () => {
+    if (!inputEmail) return "";
+    if (!isEmail) return "이메일 형식이 올바르지 않습니다.";
+    switch (emailStatus) {
+      case "checking":
+        return "중복 확인 중...";
+      case "available":
+        return "사용 가능한 이메일입니다.";
+      case "duplicate":
+        return "이미 가입된 이메일입니다.";
+      case "error":
+        return "중복 확인 중 오류가 발생했습니다.";
+      default:
+        return "";
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAllValid) return;
+
+    const response = await AxiosApi.memberSignup(
+      inputEmail,
+      inputPwd,
+      inputName,
+    );
+    console.log(response.data);
+    if (response.data === true) {
+      alert(`${inputName}님, 회원가입이 완료되었습니다.`);
+      nav("/", { replace: true }); // 로그인 페이지 경로에 맞게 수정
+    } else {
+      alert("회원 가입이 실패 했습니다.");
     }
   };
 
   return (
     <Container>
-      <Title>회원가입</Title>
+      <Form onSubmit={onSubmit}>
+        <Title>회원가입</Title>
 
-      <Form onSubmit={handleSubmit}>
-        {fields.map((field) => (
+        <Field>
           <Input
-            key={field.name}
-            label={field.label}
-            type={field.type}
-            name={field.name}
-            placeholder={field.placeholder}
-            value={form[field.name]}
-            onChange={handleChange}
-            error={errors[field.name]}
+            type="email"
+            value={inputEmail}
+            placeholder="이메일"
+            onChange={(e) => setInputEmail(e.target.value.trim())}
           />
-        ))}
+          <Message $valid={isEmailOk}>{getEmailMessage()}</Message>
+        </Field>
 
-        <Button type="submit">가입하기</Button>
-        <Button
-          type="button"
-          onClick={handleReset}
-          style={{ backgroundColor: "#888" }}
-        >
-          다시 작성
+        <Field>
+          <Input
+            type="password"
+            value={inputPwd}
+            placeholder="비밀번호"
+            onChange={(e) => setInputPwd(e.target.value)}
+          />
+          <Message $valid={isPwd}>
+            {inputPwd &&
+              (isPwd
+                ? "사용 가능한 비밀번호입니다."
+                : "영문, 숫자, 특수문자 포함 8~20자로 입력하세요.")}
+          </Message>
+        </Field>
+
+        <Field>
+          <Input
+            type="password"
+            value={inputPwdCheck}
+            placeholder="비밀번호 확인"
+            onChange={(e) => setInputPwdCheck(e.target.value)}
+          />
+          <Message $valid={isPwdCheck}>
+            {inputPwdCheck &&
+              (isPwdCheck
+                ? "비밀번호가 일치합니다."
+                : "비밀번호가 일치하지 않습니다.")}
+          </Message>
+        </Field>
+
+        <Field>
+          <Input
+            value={inputName}
+            placeholder="이름"
+            onChange={(e) => setInputName(e.target.value.trim())}
+          />
+          <Message $valid={isName}>
+            {inputName &&
+              (isName
+                ? "사용 가능한 이름입니다."
+                : "한글 또는 영문 2~10자로 입력하세요.")}
+          </Message>
+        </Field>
+
+        <Button type="submit" enabled={isAllValid}>
+          가입하기
         </Button>
+
+        <BottomText>
+          이미 계정이 있으신가요?
+          <Link to="/">로그인</Link>
+        </BottomText>
       </Form>
     </Container>
   );
 };
 
-export default SignUp;
+export default Signup;

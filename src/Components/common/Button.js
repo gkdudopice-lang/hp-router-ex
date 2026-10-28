@@ -1,28 +1,40 @@
 import styled, { css } from "styled-components";
-import React, { Children } from "react";
 
-const StyledButton = styled.button`
-  font-weight: bold;
+const StyledBtn = styled.button`
   width: 100%;
   height: 50px;
   color: white;
-  background-color: orangered;
+  background-color: #999;
   font-size: 15px;
-  border-radius: 18px;
+  font-weight: 700;
   border: none;
-  cursor: pointer;
+  border-radius: 18px;
+  cursor: not-allowed;
 
-  &:hover {
-    background-color: red;
-  }
+  /* $ 접두사(transient prop): 스타일에만 쓰이고 DOM으로 전달되지 않음 */
+  ${({ $enabled }) =>
+    $enabled &&
+    css`
+      background-color: orange;
+      cursor: pointer;
 
-  & + & {
-    margin-top: 10px;
-  }
+      &:active {
+        background-color: #e69500;
+      }
+    `}
 `;
 
-const ButtonComponent = ({ children, ...rest }) => {
-  return <StyledButton {...rest}>{children}</StyledButton>;
+const Button = ({ enabled, onClick, children, type = "button" }) => {
+  return (
+    <StyledBtn
+      type={type}
+      $enabled={enabled}
+      disabled={!enabled}
+      onClick={onClick}
+    >
+      {children}
+    </StyledBtn>
+  );
 };
 
-export default ButtonComponent;
+export default Button;

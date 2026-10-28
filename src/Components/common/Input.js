@@ -1,48 +1,28 @@
 import styled from "styled-components";
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-  text-align: left;
-`;
-
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 6px;
-  color: #333;
-`;
-
 const StyledInput = styled.input`
-  margin: 0 30px;
   width: 100%;
-  height: auto;
-  line-height: normal;
+  box-sizing: border-box; /* padding/border를 width 안에 포함 → 넘침 방지 */
   padding: 1em;
+  font-size: 15px;
   border: 1px solid #999;
   border-radius: 18px;
-  outline-style: none;
+  outline: none;
 
   &:focus {
-    border-color: orangered;
+    border-color: orange;
   }
 `;
 
-const ErrorText = styled.span`
-  color: red;
-  font-size: 12px;
-  margin-top: 4px;
-`;
-
-const InputComponent = ({ label, error, ...rest }) => {
+const Input = ({ type = "text", value, onChange, placeholder }) => {
   return (
-    <Wrapper>
-      <Label>{label}</Label>
-      <StyledInput {...rest} />
-      {error && <ErrorText style={{ color: "red" }}>{error}</ErrorText>}
-    </Wrapper>
+    <StyledInput
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+    />
   );
 };
 
-export default InputComponent;
+export default Input;
