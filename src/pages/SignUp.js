@@ -6,45 +6,48 @@ import Input from "../Components/common/Input";
 import AxiosApi from "../api/AxiosApi";
 
 /* ───────── 정규식 ───────── */
-// 이메일: 공백·@ 없는 문자 + @ + 도메인 + . + 2자 이상 최상위 도메인
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-// 비밀번호: 8~20자, 영문 + 숫자 + 특수문자(!@#$%^&*) 각 1개 이상
 const PWD_REGEX =
   /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
-// 이름: 한글 또는 영문 2~10자
 const NAME_REGEX = /^[가-힣a-zA-Z]{2,10}$/;
+const PHONE_REGEX = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/;
 
-/* ───────── 스타일 (Login과 동일한 레이아웃) ───────── */
+/* ───────── 스타일 ───────── */
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 30px;
+  padding: 30px 30px;
   box-sizing: border-box;
+  background-color: #f8f9fa;
 `;
 
 const Form = styled.form`
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
+  background: #ffffff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 `;
 
 const Title = styled.h1`
-  margin: 0 0 20px;
+  margin: 0 0 10px;
   text-align: center;
-  font-size: 28px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #333;
 `;
 
-// 입력창 + 메시지를 한 묶음으로
 const Field = styled.div`
   display: flex;
   flex-direction: column;
 `;
 
-// 입력창 오른쪽 하단 메시지. 높이를 고정해 메시지가 생겨도 레이아웃이 흔들리지 않음
 const Message = styled.p`
   margin: 4px 8px 0;
   min-height: 18px;
@@ -53,56 +56,67 @@ const Message = styled.p`
   color: ${({ $valid }) => ($valid ? "#2e9e4f" : "#e5484d")};
 `;
 
+/* 버튼 색상을 보라색(#c327eb)으로 커스텀하기 위한 래퍼 혹은 컴포넌트 내부 수정 */
+const StyledButton = styled(Button)`
+  background-color: ${({ enabled }) => (enabled ? "#c327eb" : "#ccc")};
+  &:hover {
+    background-color: ${({ enabled }) => (enabled ? "#a81cd0" : "#ccc")};
+  }
+`;
+
 const BottomText = styled.p`
-  margin-top: 8px;
+  margin-top: 10px;
   text-align: center;
   font-size: 14px;
   color: #666;
 
   a {
     margin-left: 6px;
-    color: orange;
+    color: #c327eb;
     font-weight: 700;
     text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 `;
 
 const Signup = () => {
-  const [inputEmail, setInputEmail] = useState("");
+  const [inputId, setInputId] = useState("");
   const [inputPwd, setInputPwd] = useState("");
   const [inputPwdCheck, setInputPwdCheck] = useState("");
+  const [inputEmail, setInputEmail] = useState("");
   const [inputName, setInputName] = useState("");
-  const [emailStatus, setEmailStatus] = useState("idle");
+  const [inputPhone, setInputPhone] = useState("");
+
+  const [idStatus, setIdStatus] = useState("idle");
 
   const nav = useNavigate();
 
-  /* 유효성은 state로 따로 두지 않고 렌더링 때 계산(파생값)
-     → 비밀번호를 바꾸면 재확인 결과도 자동으로 다시 계산됨 */
+  const isIdValid = inputId.trim() !== "";
   const isEmail = EMAIL_REGEX.test(inputEmail);
   const isPwd = PWD_REGEX.test(inputPwd);
   const isPwdCheck = inputPwdCheck !== "" && inputPwd === inputPwdCheck;
   const isName = NAME_REGEX.test(inputName);
+  const isPhone = PHONE_REGEX.test(inputPhone);
 
-  /* 정규식 통과 후에만 서버에 중복 확인 요청
-     - 0.5초 디바운스: 입력이 멈췄을 때만 요청
-     - ignore 플래그: 늦게 도착한 이전 응답이 최신 결과를 덮어쓰지 않게 함 */
   useEffect(() => {
-    if (!isEmail) {
-      setEmailStatus("idle");
+    if (!inputId.trim()) {
+      setIdStatus("idle");
       return;
     }
 
-    setEmailStatus("checking");
+    setIdStatus("checking");
     let ignore = false;
 
     const timer = setTimeout(async () => {
       try {
-        const res = await AxiosApi.memberExist(inputEmail);
+        const res = await AxiosApi.memberExist(inputId);
         if (ignore) return;
-        // 서버가 '이미 존재하면 true'를 반환한다고 가정
-        setEmailStatus(res.data === true ? "duplicate" : "available");
+        setIdStatus(res.data === true ? "duplicate" : "available");
       } catch (err) {
-        if (!ignore) setEmailStatus("error");
+        if (!ignore) setIdStatus("error");
       }
     }, 500);
 
@@ -110,23 +124,21 @@ const Signup = () => {
       ignore = true;
       clearTimeout(timer);
     };
-  }, [inputEmail, isEmail]);
+  }, [inputId]);
 
-  // 형식 OK + 중복 아님 이어야 최종 통과
-  const isEmailOk = isEmail && emailStatus === "available";
-  const isAllValid = isEmailOk && isPwd && isPwdCheck && isName;
+  const isIdOk = inputId.trim() !== "" && idStatus === "available";
+  const isAllValid =
+    isIdOk && isPwd && isPwdCheck && isEmail && isName && isPhone;
 
-  // 이메일 메시지 문구
-  const getEmailMessage = () => {
-    if (!inputEmail) return "";
-    if (!isEmail) return "이메일 형식이 올바르지 않습니다.";
-    switch (emailStatus) {
+  const getIdMessage = () => {
+    if (!inputId) return "";
+    switch (idStatus) {
       case "checking":
         return "중복 확인 중...";
       case "available":
-        return "사용 가능한 이메일입니다.";
+        return "사용 가능한 아이디입니다.";
       case "duplicate":
-        return "이미 가입된 이메일입니다.";
+        return "이미 사용 중인 아이디입니다.";
       case "error":
         return "중복 확인 중 오류가 발생했습니다.";
       default:
@@ -138,17 +150,24 @@ const Signup = () => {
     e.preventDefault();
     if (!isAllValid) return;
 
-    const response = await AxiosApi.memberSignup(
-      inputEmail,
-      inputPwd,
-      inputName,
-    );
-    console.log(response.data);
-    if (response.data === true) {
-      alert(`${inputName}님, 회원가입이 완료되었습니다.`);
-      nav("/", { replace: true }); // 로그인 페이지 경로에 맞게 수정
-    } else {
-      alert("회원 가입이 실패 했습니다.");
+    try {
+      const response = await AxiosApi.memberSignup(
+        inputId,
+        inputPwd,
+        inputName,
+        inputPhone,
+        inputEmail,
+      );
+      console.log(response.data);
+      if (response.data === true) {
+        alert(`${inputName}님, 회원가입이 완료되었습니다.`);
+        nav("/login", { replace: true });
+      } else {
+        alert("회원 가입이 실패 했습니다.");
+      }
+    } catch (error) {
+      console.error("회원가입 에러:", error);
+      alert("회원가입 중 오류가 발생했습니다.");
     }
   };
 
@@ -157,21 +176,23 @@ const Signup = () => {
       <Form onSubmit={onSubmit}>
         <Title>회원가입</Title>
 
+        {/* 1. 아이디 (type="text"로 변경하여 브라우저 이메일 경고창 방지) */}
         <Field>
           <Input
-            type="email"
-            value={inputEmail}
-            placeholder="이메일"
-            onChange={(e) => setInputEmail(e.target.value.trim())}
+            type="text"
+            value={inputId}
+            placeholder="아이디를 입력하세요"
+            onChange={(e) => setInputId(e.target.value.trim())}
           />
-          <Message $valid={isEmailOk}>{getEmailMessage()}</Message>
+          <Message $valid={isIdOk}>{getIdMessage()}</Message>
         </Field>
 
+        {/* 2. 비밀번호 */}
         <Field>
           <Input
             type="password"
             value={inputPwd}
-            placeholder="비밀번호"
+            placeholder="비밀번호를 입력하세요."
             onChange={(e) => setInputPwd(e.target.value)}
           />
           <Message $valid={isPwd}>
@@ -182,11 +203,12 @@ const Signup = () => {
           </Message>
         </Field>
 
+        {/* 3. 비밀번호 재확인 */}
         <Field>
           <Input
             type="password"
             value={inputPwdCheck}
-            placeholder="비밀번호 확인"
+            placeholder="비밀번호 재확인"
             onChange={(e) => setInputPwdCheck(e.target.value)}
           />
           <Message $valid={isPwdCheck}>
@@ -197,10 +219,27 @@ const Signup = () => {
           </Message>
         </Field>
 
+        {/* 4. 이메일 */}
+        <Field>
+          <Input
+            type="email"
+            value={inputEmail}
+            placeholder="이메일을 입력하세요"
+            onChange={(e) => setInputEmail(e.target.value.trim())}
+          />
+          <Message $valid={isEmail}>
+            {inputEmail &&
+              (isEmail
+                ? "올바른 이메일 형식입니다."
+                : "이메일 형식이 올바르지 않습니다.")}
+          </Message>
+        </Field>
+
+        {/* 5. 이름 */}
         <Field>
           <Input
             value={inputName}
-            placeholder="이름"
+            placeholder="이름을 입력하세요"
             onChange={(e) => setInputName(e.target.value.trim())}
           />
           <Message $valid={isName}>
@@ -211,13 +250,29 @@ const Signup = () => {
           </Message>
         </Field>
 
-        <Button type="submit" enabled={isAllValid}>
+        {/* 6. 연락처 */}
+        <Field>
+          <Input
+            value={inputPhone}
+            placeholder="연락처를 입력하세요 ex) 010-0000-0000"
+            onChange={(e) => setInputPhone(e.target.value.trim())}
+          />
+          <Message $valid={isPhone}>
+            {inputPhone &&
+              (isPhone
+                ? "올바른 연락처 형식입니다."
+                : "휴대폰 번호 형식(- 포함)을 확인하세요.")}
+          </Message>
+        </Field>
+
+        {/* 보라색(#c327eb)이 적용된 버튼 */}
+        <StyledButton type="submit" enabled={isAllValid}>
           가입하기
-        </Button>
+        </StyledButton>
 
         <BottomText>
           이미 계정이 있으신가요?
-          <Link to="/">로그인</Link>
+          <Link to="/login">로그인</Link>
         </BottomText>
       </Form>
     </Container>

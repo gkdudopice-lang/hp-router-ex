@@ -10,7 +10,7 @@ const StyledInput = styled.input`
   outline: none;
 
   &:focus {
-    border-color: orange;
+    border-color: black;
   }
 `;
 

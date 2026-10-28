@@ -15,11 +15,11 @@ const StyledBtn = styled.button`
   ${({ $enabled }) =>
     $enabled &&
     css`
-      background-color: orange;
+      background-color: #c327eb;
       cursor: pointer;
 
       &:active {
-        background-color: #e69500;
+        background-color: #c327eb;
       }
     `}
 `;
