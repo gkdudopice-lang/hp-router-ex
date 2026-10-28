@@ -1,5 +1,7 @@
+import React from "react";
 import styled, { css } from "styled-components";
 
+// 1. 실제 스타일이 들어가는 버튼 (button 태그를 스타일링)
 const StyledBtn = styled.button`
   width: 100%;
   height: 50px;
@@ -11,12 +13,16 @@ const StyledBtn = styled.button`
   border-radius: 18px;
   cursor: not-allowed;
 
-  /* $ 접두사(transient prop): 스타일에만 쓰이고 DOM으로 전달되지 않음 */
+  /* $enabled가 true일 때 보라색으로 활성화 */
   ${({ $enabled }) =>
     $enabled &&
     css`
       background-color: #c327eb;
       cursor: pointer;
+
+      &:hover {
+        background-color: #a81cd0;
+      }
 
       &:active {
         background-color: #c327eb;
@@ -24,6 +30,7 @@ const StyledBtn = styled.button`
     `}
 `;
 
+// 2. 외부에서 불러와서 사용할 Button 컴포넌트
 const Button = ({ enabled, onClick, children, type = "button" }) => {
   return (
     <StyledBtn
