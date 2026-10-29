@@ -122,7 +122,7 @@ const ReservationPayment = () => {
     alert("결제가 성공적으로 완료되었습니다!");
 
     // 예매 완료 후 마이페이지(또는 예약 내역 확인 페이지)로 이동하면서 데이터 전달
-    navigate("/profile", {
+    navigate("/reservation/history", {
       state: { newBooking: finalBookingData },
     });
   };

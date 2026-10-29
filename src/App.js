@@ -12,6 +12,8 @@ import ReservationDetail from "./pages/ReservationDetail";
 import ReservationSelect from "./pages/ReservationSelect";
 import ReservationSeat from "./pages/ReservationSeat";
 import ReservationPayment from "./pages/ReservationPayment";
+import ReviewStars from "./pages/ReivewStars";
+import ReservationHistory from "./pages/ReservationHistory";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -41,6 +43,8 @@ function App() {
             path="/reservation/payment/:id"
             element={<ReservationPayment />}
           />
+          <Route path="/reservation/review/:id" element={<ReviewStars />} />
+          <Route path="/reservation/history" element={<ReservationHistory />} />
           <Route path="/board" element={<BoardList />} />
           <Route path="/board/write" element={<BoardWrite />} />
           <Route path="/board/:boardId" element={<BoardDetail />} />
