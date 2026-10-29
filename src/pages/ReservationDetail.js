@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../Components/common/Button";
+import BottomBar from "../Components/common/BottomBar";
 
 /* ───────── 스타일 컴포넌트 ───────── */
 const Container = styled.div`
@@ -10,17 +11,9 @@ const Container = styled.div`
   padding: 30px 20px 80px;
   box-sizing: border-box;
   background-color: #f8f9fa;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 20px;
-`;
-
-const TitleBar = styled.h1`
-  font-size: 22px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 10px;
 `;
 
 /* 1. 표지(이미지) 영역 */
@@ -101,42 +94,6 @@ const SectionBox = styled.div`
   }
 `;
 
-/* 하단 고정 예매하기 버튼 영역 */
-const BottomBar = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #ffffff;
-  padding: 15px 20px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
-  display: flex;
-  justify-content: center;
-  box-sizing: border-box;
-  z-index: 100;
-
-  div {
-    width: 100%;
-    max-width: 760px;
-  }
-`;
-
-const StyledButton = styled(Button)`
-  background-color: #c327eb;
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #a81cd0;
-  }
-`;
-
 const ReservationDetail = () => {
   const { id } = useParams(); // URL에서 상품 번호(id) 가져오기
   const navigate = useNavigate();
@@ -167,10 +124,8 @@ const ReservationDetail = () => {
 
   return (
     <Container>
-      <TitleBar>예약 페이지 | 상품 {id || "1"}</TitleBar>
-
       {/* 1. 표지 이미지 */}
-      <PosterBox>표지 (이미지 영역)</PosterBox>
+      <PosterBox>표지 (이미지 영역) - 상품 {id || "1"}</PosterBox>
 
       {/* 2. 상단 탭 네비게이션 */}
       <TabNav>

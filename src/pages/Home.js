@@ -93,13 +93,13 @@ const Home = () => {
   const keywords = ["인기 추천", "신규 등록", "오픈 예정", "마감 임박"];
 
   const handleCardClick = (id) => {
-    navigate(`/reservation/${id}`);
+    // 💡 상세 페이지 경로(/reservation/detail/:id)에 맞게 수정했습니다!
+    navigate(`/reservation/detail/${id}`);
   };
 
   // 캘린더에서 날짜를 선택했을 때 실행되는 함수
   const handleDateSelect = (formattedDate) => {
     console.log("홈 화면에서 받은 선택 날짜:", formattedDate);
-    // 나중에 이 날짜를 백엔드로 보내서 해당 날짜 상품 목록을 불러오면 됩니다!
   };
 
   return (
@@ -111,7 +111,7 @@ const Home = () => {
             <h3>상품 {item}</h3>
             <p>상품 상세 설명 안내</p>
             <span
-              style={{ fontSize: "12px", color: "purple", fontWeight: "bold" }}
+              style={{ fontSize: "12px", color: "#c327eb", fontWeight: "bold" }}
             >
               예약하기 &gt;
             </span>

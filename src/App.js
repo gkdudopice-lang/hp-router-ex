@@ -9,6 +9,9 @@ import BoardList from "./pages/boards/BoardList";
 import BoardWrite from "./pages/boards/BoardWrite";
 import BoardDetail from "./pages/boards/BoardDetail";
 import ReservationDetail from "./pages/ReservationDetail";
+import ReservationSelect from "./pages/ReservationSelect";
+import ReservationSeat from "./pages/ReservationSeat";
+import ReservationPayment from "./pages/ReservationPayment";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -25,7 +28,19 @@ function App() {
           {/* 앱 접속 시 홈 화면이 기본으로 뜸 */}
           <Route path="/home" element={<Home />} />{" "}
           {/* /home으로 접속해도 홈으로 뜸 */}
-          <Route path="/reservation/:id" element={<ReservationDetail />} />
+          <Route
+            path="/reservation/detail/:id"
+            element={<ReservationDetail />}
+          />
+          <Route
+            path="/reservation/select/:id"
+            element={<ReservationSelect />}
+          />
+          <Route path="/reservation/seat/:id" element={<ReservationSeat />} />
+          <Route
+            path="/reservation/payment/:id"
+            element={<ReservationPayment />}
+          />
           <Route path="/board" element={<BoardList />} />
           <Route path="/board/write" element={<BoardWrite />} />
           <Route path="/board/:boardId" element={<BoardDetail />} />
