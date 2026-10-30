@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../Components/common/Button";
+import BackButton from "../Components/common/BackButton";
 
 const Container = styled.div`
   max-width: 600px;
@@ -25,20 +26,6 @@ const HeaderRow = styled.div`
     font-weight: 700;
     color: #1e293b;
     margin: 0 auto;
-  }
-`;
-
-const BackButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #64748b;
-  position: absolute;
-  left: 0;
-
-  &:hover {
-    color: #000;
   }
 `;
 
@@ -158,7 +145,7 @@ export default function AddressManagement() {
   return (
     <Container>
       <HeaderRow>
-        <BackButton onClick={() => navigate("/profile")}>〈</BackButton>
+        <BackButton onClick={() => navigate("/mypage")}>〈</BackButton>
         <h2>배송지 관리 ({addresses.length}/10)</h2>
       </HeaderRow>
 

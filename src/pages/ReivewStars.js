@@ -4,6 +4,7 @@ import styled from "styled-components";
 import Button from "../Components/common/Button"; // 💡 공통 버튼 컴포넌트 재사용
 import Star from "../img/star.png";
 import yellowStar from "../img/yellostar.png";
+import BackButton from "../Components/common/BackButton";
 
 export default function ReviewStars() {
   const { id } = useParams(); // 어떤 상품에 대한 리뷰인지 상품 번호 받기
@@ -42,8 +43,10 @@ export default function ReviewStars() {
 
   return (
     <ReviewContainer>
-      <Title>리뷰 작성하기 (상품 {id || "1"})</Title>
-
+      <HeaderRow>
+        <BackButton></BackButton>
+        <Title>리뷰 작성하기 (상품 {id || "1"})</Title>
+      </HeaderRow>
       <Label>별점 선택 (클릭하여 선택)</Label>
 
       <RatingRow>
@@ -98,12 +101,18 @@ const ReviewContainer = styled.div`
   gap: 16px;
 `;
 
+const HeaderRow = styled.div`
+  display: flex;
+  margin-bottom: 10px;
+  gap: 110px;
+`;
+
 const Title = styled.h2`
   text-align: center;
   font-size: 20px;
   font-weight: 700;
+
   color: #1e293b;
-  margin: 0 0 10px 0;
 `;
 
 const Label = styled.div`

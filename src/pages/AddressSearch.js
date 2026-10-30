@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Input from "../Components/common/Input";
 import Button from "../Components/common/Button"; // 공통 버튼 활용
+import BackButton from "../Components/common/BackButton";
 
 const Container = styled.div`
   max-width: 600px;
@@ -26,20 +27,6 @@ const HeaderRow = styled.div`
     font-weight: 700;
     color: #1e293b;
     margin: 0 auto;
-  }
-`;
-
-const BackButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #64748b;
-  position: absolute;
-  left: 0;
-
-  &:hover {
-    color: #000;
   }
 `;
 
