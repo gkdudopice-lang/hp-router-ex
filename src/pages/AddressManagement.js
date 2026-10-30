@@ -123,41 +123,36 @@ export default function AddressManagement() {
   const location = useLocation();
   const newAddress = location.state?.selectedAddress;
 
-  // 배송지 목록 상태 (문자열 배열로 관리)
   const [addresses, setAddresses] = useState([]);
 
-  // 검색 페이지에서 주소를 들고 돌아올 때 실행
   useEffect(() => {
     if (newAddress) {
-      // 💡 이미 등록된 주소인지 체크 (중복 등록 방지)
-      if (addresses.includes(newAddress)) {
-        alert("이미 등록된 배송지입니다.");
-        return;
-      }
-
-      if (addresses.length >= 10) {
-        alert("배송지는 최대 10개까지만 등록할 수 있습니다.");
-        return;
-      }
-
-      //새 주소 안전하게 추가
-      setAddresses((prev) => [...prev, newAddress]);
+      setAddresses((prev) => {
+        // 이미 목록에 있는 주소라면 추가하지 않고 기존 목록 반환
+        if (prev.includes(newAddress)) {
+          alert("이미 등록된 배송지입니다.");
+          return prev;
+        }
+        if (prev.length >= 10) {
+          alert("배송지는 최대 10개까지만 등록할 수 있습니다.");
+          return prev;
+        }
+        return [...prev, newAddress];
+      });
     }
   }, [newAddress]);
 
-  // 배송지 삭제 함수
   const handleDelete = (indexToDelete) => {
-    setAddresses(addresses.filter((_, index) => index !== indexToDelete));
+    setAddresses((prev) => prev.filter((_, index) => index !== indexToDelete));
   };
 
-  // 더블클릭 시 기본 배송지(맨 앞)로 변경하는 함수
   const handleSetDefault = (indexToSet) => {
-    const targetAddress = addresses[indexToSet];
-    const remainingAddresses = addresses.filter(
-      (_, index) => index !== indexToSet,
-    );
-    setAddresses([targetAddress, ...remainingAddresses]);
-    alert(`"${targetAddress}" (이)가 기본 배송지로 설정되었습니다.`);
+    setAddresses((prev) => {
+      const targetAddress = prev[indexToSet];
+      const remaining = prev.filter((_, index) => index !== indexToSet);
+      alert(`"${targetAddress}" (이)가 기본 배송지로 설정되었습니다.`);
+      return [targetAddress, ...remaining];
+    });
   };
 
   return (
@@ -180,7 +175,7 @@ export default function AddressManagement() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {addresses.map((addr, index) => (
             <AddressCard
-              key={`${addr}-${index}`} // 💡 고유한 key 값을 주어 2,3번 카드가 꼬이지 않도록 완벽 분리
+              key={`${addr}-${index}`}
               $isDefault={index === 0}
               onDoubleClick={() => handleSetDefault(index)}
             >

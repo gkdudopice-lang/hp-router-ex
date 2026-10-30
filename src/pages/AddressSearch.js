@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Input from "../Components/common/Input";
+import Button from "../Components/common/Button"; // 공통 버튼 활용
 
 const Container = styled.div`
   max-width: 600px;
@@ -104,19 +105,14 @@ export default function AddressSearch() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
 
-  // 💡 주소 예시를 6개로 넉넉하게 확장!
-  const dummyResults = [
-    "서울 강남구 테헤란로 123 스파크타워 4층",
-    "서울 서초구 서초대로 77길 55 에이프로스퀘어",
-    "경기도 성남시 분당구 판교역로 166 카카오 판교오피스",
-    "서울특별시 마포구 양화로 45 메세나폴리스",
-    "부산광역시 해운대구 센텀중앙로 79 센텀사이언스파크",
-    "인천광역시 연수구 송도과학로 32 송도테크노파크",
-  ];
-
-  const handleSelectAddress = (address) => {
+  // 주소를 선택하거나 직접 입력해서 등록할 때 실행되는 함수
+  const handleSelectAddress = (addressToRegister) => {
+    if (!addressToRegister.trim()) {
+      alert("주소를 입력해주세요.");
+      return;
+    }
     navigate("/profile/address", {
-      state: { selectedAddress: address },
+      state: { selectedAddress: addressToRegister },
     });
   };
 
@@ -127,6 +123,7 @@ export default function AddressSearch() {
         <h2>배송지 검색</h2>
       </HeaderRow>
 
+      {/* 검색 입력창 */}
       <SearchBoxWrapper>
         <Input
           type="text"
@@ -134,8 +131,15 @@ export default function AddressSearch() {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />
-        <span>🔍</span>
+        <span onClick={() => handleSelectAddress(keyword)}>🔍</span>
       </SearchBoxWrapper>
+
+      {/* 💡 직접 입력한 검색어로 바로 등록할 수 있는 버튼 추가 */}
+      {keyword.trim() && (
+        <Button enabled={true} onClick={() => handleSelectAddress(keyword)}>
+          "{keyword}" (으)로 배송지 등록하기
+        </Button>
+      )}
 
       <TipBox>
         <h4>tip</h4>
@@ -157,22 +161,6 @@ export default function AddressSearch() {
           </li>
         </ul>
       </TipBox>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
-          추천 주소 (클릭하여 선택)
-        </p>
-        {dummyResults
-          .filter((item) => item.includes(keyword))
-          .map((address, index) => (
-            <ResultItem
-              key={index}
-              onClick={() => handleSelectAddress(address)}
-            >
-              📍 {address}
-            </ResultItem>
-          ))}
-      </div>
     </Container>
   );
 }
