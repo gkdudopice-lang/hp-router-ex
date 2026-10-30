@@ -110,42 +110,61 @@ export default function AddressManagement() {
   const location = useLocation();
   const newAddress = location.state?.selectedAddress;
 
-  const [addresses, setAddresses] = useState([]);
+  const [addresses, setAddresses] = useState(() => {
+    const saved = localStorage.getItem("saved_addresses");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     if (newAddress) {
+      const trimmedNewAddress = newAddress.trim();
+
       setAddresses((prev) => {
-        // 이미 목록에 있는 주소라면 추가하지 않고 기존 목록 반환
-        if (prev.includes(newAddress)) {
-          alert("이미 등록된 배송지입니다.");
-          return prev;
+        // 이미 목록에 있는 주소인지 검사
+        if (prev.includes(trimmedNewAddress)) {
+          return prev; // 중복이면 조용히 기존 목록 유지
         }
         if (prev.length >= 10) {
           alert("배송지는 최대 10개까지만 등록할 수 있습니다.");
           return prev;
         }
-        return [...prev, newAddress];
+
+        const updated = [...prev, trimmedNewAddress];
+        localStorage.setItem("saved_addresses", JSON.stringify(updated));
+        return updated;
       });
+
+      // state 초기화 (중복 트리거 방지)
+      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [newAddress]);
+  }, [newAddress, location.pathname, navigate]);
 
   const handleDelete = (indexToDelete) => {
-    setAddresses((prev) => prev.filter((_, index) => index !== indexToDelete));
-  };
-
-  const handleSetDefault = (indexToSet) => {
     setAddresses((prev) => {
-      const targetAddress = prev[indexToSet];
-      const remaining = prev.filter((_, index) => index !== indexToSet);
-      alert(`"${targetAddress}" (이)가 기본 배송지로 설정되었습니다.`);
-      return [targetAddress, ...remaining];
+      const updated = prev.filter((_, index) => index !== indexToDelete);
+      localStorage.setItem("saved_addresses", JSON.stringify(updated));
+      return updated;
     });
   };
 
+  const handleSetDefault = (indexToSet) => {
+    const targetAddress = addresses[indexToSet];
+
+    // 💡 [수정 포인트]: alert을 setAddresses 바깥으로 분리!
+    // Strict Mode에서 상태 함수가 두 번 실행되더라도 alert은 오직 한 번만 뜨도록 보장합니다.
+    alert(`"${targetAddress}" (이)가 기본 배송지로 설정되었습니다.`);
+
+    setAddresses((prev) => {
+      const remaining = prev.filter((_, index) => index !== indexToSet);
+      const updated = [targetAddress, ...remaining];
+      localStorage.setItem("saved_addresses", JSON.stringify(updated));
+      return updated;
+    });
+  };
   return (
     <Container>
       <HeaderRow>
-        <BackButton onClick={() => navigate("/mypage")}>〈</BackButton>
+        <BackButton onClick={() => navigate("/profile")}>〈</BackButton>
         <h2>배송지 관리 ({addresses.length}/10)</h2>
       </HeaderRow>
 

@@ -86,7 +86,7 @@ const MyPageMain = () => {
       {/* 3. 활동 관리 섹션 */}
       <Section>
         <SectionTitle>활동 관리</SectionTitle>
-        <StyledLink to="/reservation/review/1">내가 쓴 리뷰</StyledLink>
+        <StyledLink to="/mypage/reviews">내가 쓴 리뷰</StyledLink>
       </Section>
     </Container>
   );

@@ -104,7 +104,7 @@ const ReviewContainer = styled.div`
 const HeaderRow = styled.div`
   display: flex;
   margin-bottom: 10px;
-  gap: 110px;
+  justify-content: space-between;
 `;
 
 const Title = styled.h2`
