@@ -17,6 +17,7 @@ import ReservationHistory from "./pages/ReservationHistory";
 import WishList from "./pages/WishList";
 import AddressManagement from "./pages/AddressManagement";
 import AddressSearch from "./pages/AddressSearch";
+import MyPageMain from "./pages/MyPageMain";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
           <Route path="/wishlist" element={<WishList />} />
           <Route path="/profile/address" element={<AddressManagement />} />
           <Route path="/address/search" element={<AddressSearch />} />
+          <Route path="/mypage" element={<MyPageMain />} />
           <Route path="/board" element={<BoardList />} />
           <Route path="/board/write" element={<BoardWrite />} />
           <Route path="/board/:boardId" element={<BoardDetail />} />

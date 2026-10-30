@@ -291,6 +291,17 @@ export default function ReservationHistory() {
     }
   };
 
+  // '리뷰 작성하기' 버튼을 눌렀을 때 실행되는 함수
+  const handleGoToReview = (item) => {
+    // navigate를 통해 리뷰 작성 페이지로 이동하면서 state에 상품 이름과 예약 번호를 쏙 담아 보냅니다!
+    navigate(`/reservation/review/${item.id}`, {
+      state: {
+        productTitle: item.title,
+        bookingDate: item.date,
+      },
+    });
+  };
+
   // 탭에 따라 필터링된 목록 계산
   const filteredReservations = reservations.filter((item) => {
     if (activeTab === "upcoming") return item.status === "이용 예정";
@@ -396,6 +407,19 @@ export default function ReservationHistory() {
                   }}
                 >
                   상품 바코드
+                </SubButton>
+              )}
+              {item.status === "이용 완료" && (
+                <SubButton
+                  enabled={true}
+                  onClick={() => handleGoToReview(item)}
+                  style={{
+                    backgroundColor: "#f3e8ff",
+                    color: "purple",
+                    border: "1px solid purple",
+                  }}
+                >
+                  리뷰 작성하기
                 </SubButton>
               )}
             </ActionRow>
