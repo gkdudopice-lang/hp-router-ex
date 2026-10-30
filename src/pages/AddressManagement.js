@@ -164,7 +164,7 @@ export default function AddressManagement() {
   return (
     <Container>
       <HeaderRow>
-        <BackButton onClick={() => navigate("/profile")}>〈</BackButton>
+        <BackButton onClick={() => navigate("/mypage/account")}>〈</BackButton>
         <h2>배송지 관리 ({addresses.length}/10)</h2>
       </HeaderRow>
 
