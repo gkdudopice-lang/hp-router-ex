@@ -22,6 +22,7 @@ import MyReviewList from "./pages/MyReviewList";
 import CustomerCenter from "./pages/CustomerCenter";
 import AccountInfo from "./pages/AccountInfo";
 import PaymentManage from "./pages/PaymentManage";
+import PaymentRegister from "./pages/PaymentRegister";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
           <Route path="/mypage/customer-center" element={<CustomerCenter />} />
           <Route path="/mypage/account" element={<AccountInfo />} />
           <Route path="/mypage/payment" element={<PaymentManage />} />
+          <Route path="/payment-register" element={<PaymentRegister />} />
           <Route path="/board" element={<BoardList />} />
           <Route path="/board/write" element={<BoardWrite />} />
           <Route path="/board/:boardId" element={<BoardDetail />} />

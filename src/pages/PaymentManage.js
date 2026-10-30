@@ -24,6 +24,14 @@ const PaymentManage = () => {
     );
   };
 
+  const handleDelete = (idToDelete) => {
+    setPaymentMethods((prev) => {
+      const updated = prev.filter((method) => method.id !== idToDelete);
+      localStorage.setItem("saved_payment_methods", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   // 결제수단 추가 페이지로 이동하는 함수
   const handleNavigateToAdd = () => {
     navigate("/payment-register"); // (필요에 따라 주소 확인)
@@ -57,6 +65,15 @@ const PaymentManage = () => {
               <span className="title">{method.name}</span>
               <span className="number">{method.number}</span>
             </InfoArea>
+
+            <DeleteButton
+              onClick={(e) => {
+                e.stopPropagation(); // 부모 요소로 클릭 이벤트가 퍼지는 걸 막아줍니다
+                handleDelete(method.id); // 또는 index
+              }}
+            >
+              삭제
+            </DeleteButton>
           </MethodItem>
         ))}
       </MethodListWrapper>
@@ -132,6 +149,20 @@ const StarButton = styled.button`
 
   &:active {
     transform: scale(0.9);
+  }
+`;
+
+const DeleteButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #ef4444;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: auto;
+
+  &:hover {
+    text-decoration: underline;
   }
 `;
 
