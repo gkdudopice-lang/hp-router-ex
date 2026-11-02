@@ -33,7 +33,7 @@ export default function ReviewStars() {
 
     // 나중에 백엔드 API와 연결할 자리
     alert(`상품 ${id}번의 리뷰가 등록되었습니다! (임시)`);
-    navigate(-1); // 등록 후 이전 페이지로 이동
+    navigate("/mypage/reviews"); // 등록 후 이전 페이지로 이동
   };
 
   const handleCancel = () => {

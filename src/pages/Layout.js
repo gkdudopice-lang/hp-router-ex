@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import Button from "../Components/common/Button";
-import Input from "../Components/common/Input";
+import Button from "../Components/common/Button"; // 공통 버튼 컴포넌트 (폼 등 다른 곳에서 사용)
+import Input from "../Components/common/Input"; // 공통 인풋 컴포넌트
 import logoImg from "../img/사이트 로고.png";
 
 const Container = styled.div`
@@ -26,30 +26,27 @@ const Logo = styled.div`
   font-weight: bold;
   color: #333;
   cursor: pointer;
+
+  img {
+    height: 40px;
+  }
 `;
 
 const SearchBox = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 350px; // 검색바 전체 영역의 크기 (원하시는 만큼 조절 가능)
+  width: 350px;
 
-  /* 1. 인풋창은 남은 공간을 길게 채우도록 설정 */
   input {
     flex: 1;
-  }
-
-  /* 2. 돋보기 버튼은 크기가 찌그러지지 않게 고정 */
-  button {
-    width: 60px;
-    flex-shrink: 0;
   }
 `;
 
 const SearchButton = styled.button`
   width: 50px;
   height: 40px;
-  background-color: white; // 원하시는 색상 (예: 다크그레이)
+  background-color: #333;
   color: white;
   border: none;
   border-radius: 8px;
@@ -60,7 +57,7 @@ const SearchButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background-color: lightgray; // 마우스 올렸을 때 색상
+    background-color: #555;
   }
 `;
 
@@ -80,13 +77,33 @@ const MenuNav = styled.nav`
     }
   }
 
-  /* 찜과 마이페이지 색상을 다르게 주고 싶을 때 지정 */
   .wish-link {
     color: #ff4757;
   }
 
   .mypage-link {
     color: blue;
+  }
+
+  .user-greeting {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  /* 헤더 전용 로그아웃 버튼 스타일 (공통 버튼 컴포넌트와 분리) */
+  .logout-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ff4757;
+    padding: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 `;
 
@@ -105,16 +122,41 @@ const Footer = styled.footer`
   color: #666;
 `;
 
-const Layout = () => {
+export default function Layout() {
   const navigate = useNavigate();
   const [searchKeyword, setSearchKeyword] = useState("");
+
+  // 1. 로그인 상태 및 사용자 아이디 상태 관리
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState("");
+
+  // 2. 컴포넌트 마운트 시 로컬스토리지 확인
+  useEffect(() => {
+    const savedUserId = localStorage.getItem("userId");
+
+    if (savedUserId) {
+      setIsLoggedIn(true);
+      setUserId(savedUserId);
+    }
+  }, []);
+
+  // 3. 로그아웃 처리 함수
+  const handleLogout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+
+    setIsLoggedIn(false);
+    setUserId("");
+    alert("로그아웃 되었습니다.");
+    navigate("/");
+  };
 
   const handleSearchSubmit = () => {
     if (!searchKeyword.trim()) {
       alert("검색어를 입력해주세요.");
       return;
     }
-    alert(`검색어 "${searchKeyword}"(으)로 검색합니다.`);
+    navigate(`/search?keyword=${searchKeyword}`);
   };
 
   return (
@@ -122,7 +164,7 @@ const Layout = () => {
       {/* 공통 헤더 영역 */}
       <Header>
         <Logo onClick={() => navigate("/")}>
-          <img src={logoImg} alt="로고" style={{ height: "40px" }} />
+          <img src={logoImg} alt="로고" />
         </Logo>
 
         <SearchBox>
@@ -138,8 +180,22 @@ const Layout = () => {
           <Link to="/wishlist" className="wish-link">
             찜
           </Link>
-          <Link to="/login">로그인</Link>
-          <Link to="/signup">회원가입</Link>
+
+          {/* 4. 로그인 상태에 따른 조건부 렌더링 */}
+          {isLoggedIn ? (
+            <>
+              <span className="user-greeting">{userId}님</span>
+              <button onClick={handleLogout} className="logout-btn">
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">로그인</Link>
+              <Link to="/signup">회원가입</Link>
+            </>
+          )}
+
           <Link to="/mypage" className="mypage-link">
             MY PAGE
           </Link>
@@ -160,6 +216,4 @@ const Layout = () => {
       </Footer>
     </Container>
   );
-};
-
-export default Layout;
+}

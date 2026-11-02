@@ -415,8 +415,8 @@ export default function ReservationHistory() {
                   onClick={() => handleGoToReview(item)}
                   style={{
                     backgroundColor: "#f3e8ff",
-                    color: "purple",
-                    border: "1px solid purple",
+                    color: "#c327eb",
+                    border: "2px solid #c327eb",
                   }}
                 >
                   리뷰 작성하기
