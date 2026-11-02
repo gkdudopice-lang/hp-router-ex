@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import CustomCalendar from "../Components/common/CustomCalendar"; // 폴더 및 파일명 일치
@@ -83,6 +83,18 @@ const ReservationSelect = () => {
 
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSessionId, setSelectedSessionId] = useState(null);
+
+  const alertShown = useRef(false);
+
+  useEffect(() => {
+    const isLogin = localStorage.getItem("isLogin");
+
+    if (isLogin !== "TRUE" && !alertShown.current) {
+      alertShown.current = true;
+      alert("로그인이 필요한 서비스입니다.");
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
 
   const sessionList = [
     {

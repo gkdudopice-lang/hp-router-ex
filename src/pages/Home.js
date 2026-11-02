@@ -130,7 +130,7 @@ const Home = () => {
   return (
     <ContentWrapper>
       <ProductSection>
-        <ViewAllLink to="/products/all">상품 전체보기 &gt;</ViewAllLink>
+        <ViewAllLink to="/concertlist">상품 전체보기 &gt;</ViewAllLink>
 
         {/* 상단 상품 카드 4개 영역 */}
         <TopSection>

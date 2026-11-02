@@ -12,7 +12,7 @@ import ReservationDetail from "./pages/ReservationDetail";
 import ReservationSelect from "./pages/ReservationSelect";
 import ReservationSeat from "./pages/ReservationSeat";
 import ReservationPayment from "./pages/ReservationPayment";
-import ReviewStars from "./pages/ReivewStars";
+import ReviewStars from "./pages/ReviewStars";
 import ReservationHistory from "./pages/ReservationHistory";
 import WishList from "./pages/WishList";
 import AddressManagement from "./pages/AddressManagement";
@@ -24,6 +24,7 @@ import AccountInfo from "./pages/AccountInfo";
 import PaymentManage from "./pages/PaymentManage";
 import PaymentRegister from "./pages/PaymentRegister";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import AllConcertMenu from "./pages/AllConcertMenu";
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
           <Route path="/mypage/account" element={<AccountInfo />} />
           <Route path="/mypage/payment" element={<PaymentManage />} />
           <Route path="/payment-register" element={<PaymentRegister />} />
+          <Route path="/concertlist" element={<AllConcertMenu />} />
           <Route path="/board" element={<BoardList />} />
           <Route path="/board/write" element={<BoardWrite />} />
           <Route path="/board/:boardId" element={<BoardDetail />} />
