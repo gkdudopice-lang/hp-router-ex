@@ -1,5 +1,6 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useRef } from "react";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 /* ───────── 스타일 컴포넌트 ───────── */
@@ -65,6 +66,19 @@ const StyledLink = styled(Link)`
 `;
 
 const MyPageMain = () => {
+  const navigate = useNavigate();
+  const alertShown = useRef(false);
+
+  useEffect(() => {
+    const isLogin = localStorage.getItem("isLogin");
+
+    if (isLogin !== "TRUE" && !alertShown.current) {
+      alertShown.current = true;
+      alert("로그인이 필요한 서비스입니다.");
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
+
   return (
     <Container>
       <PageTitle>마이페이지</PageTitle>

@@ -46,7 +46,7 @@ const SearchBox = styled.div`
 const SearchButton = styled.button`
   width: 50px;
   height: 40px;
-  background-color: #333;
+  background-color: white;
   color: white;
   border: none;
   border-radius: 8px;
@@ -57,7 +57,7 @@ const SearchButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background-color: #555;
+    background-color: lightgray;
   }
 `;
 
@@ -98,7 +98,7 @@ const MenuNav = styled.nav`
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    color: #ff4757;
+    color: #000000;
     padding: 0;
 
     &:hover {
@@ -127,7 +127,7 @@ export default function Layout() {
   const [searchKeyword, setSearchKeyword] = useState("");
 
   // 1. 로그인 상태 및 사용자 아이디 상태 관리
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLogIn, setIsLogIn] = useState(false);
   const [userId, setUserId] = useState("");
 
   // 2. 컴포넌트 마운트 시 로컬스토리지 확인
@@ -135,17 +135,16 @@ export default function Layout() {
     const savedUserId = localStorage.getItem("userId");
 
     if (savedUserId) {
-      setIsLoggedIn(true);
+      setIsLogIn(true);
       setUserId(savedUserId);
     }
   }, []);
 
   // 3. 로그아웃 처리 함수
   const handleLogout = () => {
-    localStorage.removeItem("userId");
-    localStorage.removeItem("token");
+    localStorage.removeItem("isLogin");
 
-    setIsLoggedIn(false);
+    setIsLogIn(false);
     setUserId("");
     alert("로그아웃 되었습니다.");
     navigate("/");
@@ -182,7 +181,7 @@ export default function Layout() {
           </Link>
 
           {/* 4. 로그인 상태에 따른 조건부 렌더링 */}
-          {isLoggedIn ? (
+          {isLogIn ? (
             <>
               <span className="user-greeting">{userId}님</span>
               <button onClick={handleLogout} className="logout-btn">
