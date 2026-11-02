@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-/* ───────── 스타일 컴포넌트 ───────── */
 const Container = styled.div`
   max-width: 900px;
   width: 100%;
@@ -21,20 +20,28 @@ const PageTitle = styled.h2`
   margin: 0 0 10px 0;
 `;
 
-/* 상품 카드들을 3열로 예쁘게 배치하는 그리드 레이아웃 */
 const GridContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr); // 모바일선 2열
+    grid-template-columns: repeat(2, 1fr);
   }
 `;
 
-/* 개별 상품 카드 박스 (더블 클릭 이벤트 적용) */
+const EmptyBox = styled.div`
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+  font-size: 15px;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px dashed #cbd5e1;
+`;
+
 const ProductCard = styled.div`
-  position: relative; /* 우측 하단에 하트를 절대 위치(absolute)로 꽂기 위해 필요 */
+  position: relative;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
@@ -45,12 +52,11 @@ const ProductCard = styled.div`
   justify-content: space-between;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   cursor: pointer;
-  user-select: none; /* 더블 클릭 시 글씨 드래그 방지 */
   transition: all 0.2s ease-in-out;
 
   &:hover {
     transform: translateY(-4px);
-    border-color: #c327eb; /* 마우스 올리면 보라색 테두리 */
+    border-color: #c327eb;
     box-shadow: 0 6px 16px rgba(195, 39, 235, 0.1);
   }
 
@@ -74,50 +80,55 @@ const ProductCard = styled.div`
   }
 `;
 
-/* 카드 우측 하단에 쏙 들어가는 하트 아이콘 뱃지 */
-const HeartBadge = styled.div`
+/* 찜 취소를 명확하게 누를 수 있는 독립된 하트 버튼 */
+const HeartButton = styled.button`
   position: absolute;
   bottom: 16px;
   right: 16px;
   background-color: #f3e8ff;
   color: #c327eb;
   border: 1px solid #c327eb;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
   box-shadow: 0 2px 6px rgba(195, 39, 235, 0.2);
-  animation: popUp 0.2s ease-in-out;
+  transition: transform 0.1s;
 
-  @keyframes popUp {
-    0% {
-      transform: scale(0.8);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
+  &:active {
+    transform: scale(0.95);
   }
 `;
 
-/* ───────── 메인 컴포넌트 ───────── */
 export default function WishList() {
   const navigate = useNavigate();
 
-  // 예시 상품 데이터 (요청하신 대로 4가지 예시안 준비)
-  const [products, setProducts] = useState([
-    { id: 1, title: "상품 1: 뮤지컬 엘리자벳", isLiked: true }, // 기본 찜 되어있는 상태 예시
-    { id: 2, title: "상품 2: 가을 인디 콘서트", isLiked: false },
-    { id: 3, title: "상품 3: 클래식 오케스트라", isLiked: true }, // 기본 찜 되어있는 상태 예시
-    { id: 4, title: "상품 4: 세미나룸 대여", isLiked: false },
-  ]);
+  // 초기 데이터를 localStorage에서 가져오거나 기본값 사용
+  const [products, setProducts] = useState(() => {
+    const saved = localStorage.getItem("wishlist_products");
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return [
+      { id: 1, title: "상품 1: 뮤지컬 엘리자벳", isLiked: true },
+      { id: 2, title: "상품 2: 가을 인디 콘서트", isLiked: false },
+      { id: 3, title: "상품 3: 클래식 오케스트라", isLiked: true },
+      { id: 4, title: "상품 4: 세미나룸 대여", isLiked: false },
+    ];
+  });
 
-  // 카드를 '더블 클릭'했을 때 실행되는 함수 (찜하기 토글)
-  const handleDoubleClickCard = (id) => {
+  // 상태가 바뀔 때마다 localStorage에 저장하여 다른 페이지와 연동되도록 함
+  useEffect(() => {
+    localStorage.setItem("wishlist_products", JSON.stringify(products));
+  }, [products]);
+
+  // 하트 버튼을 눌렀을 때 찜 상태 토글 (이벤트 버블링 방지 포함)
+  const handleToggleLike = (id, e) => {
+    e.stopPropagation(); // 카드가 클릭되는 것(상세페이지 이동)을 막아줌
     setProducts(
       products.map((item) =>
         item.id === id ? { ...item, isLiked: !item.isLiked } : item,
@@ -125,34 +136,43 @@ export default function WishList() {
     );
   };
 
+  const likedProducts = products.filter((item) => item.isLiked);
+
   return (
     <Container>
       <PageTitle>찜 목록</PageTitle>
       <p
         style={{ fontSize: "14px", color: "#64748b", margin: "-5px 0 10px 0" }}
       >
-        💡 원하시는 상품을 <strong>더블 클릭</strong>하시면 우측 하단에
-        찜(하트)이 생성되거나 취소됩니다!
+        💡 상품을 누르시면 상세 페이지로 이동하며, 우측 하단의{" "}
+        <strong>하트 버튼</strong>을 누르면 찜이 취소됩니다.
       </p>
 
-      <GridContainer>
-        {products.map((item) => (
-          <ProductCard
-            key={item.id}
-            onDoubleClick={() => handleDoubleClickCard(item.id)}
-            onClick={() => {
-              // 싱글 클릭 시 해당 상품 상세 페이지로 이동하도록 연결 가능
-              // navigate(`/reservation/detail/${item.id}`);
-            }}
-          >
-            <div className="thumb">이미지 영역</div>
-            <div className="info">{item.title}</div>
+      {likedProducts.length === 0 ? (
+        <EmptyBox>
+          <p>❤️ 찜한 상품이 없습니다.</p>
+          <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "6px" }}>
+            마음에 드는 상품에 찜을 추가해 보세요!
+          </p>
+        </EmptyBox>
+      ) : (
+        <GridContainer>
+          {likedProducts.map((item) => (
+            <ProductCard
+              key={item.id}
+              onClick={() => navigate(`/reservation/detail/${item.id}`)}
+            >
+              <div className="thumb">이미지 영역</div>
+              <div className="info">{item.title}</div>
 
-            {/* isLiked가 true일 때만 우측 하단에 하트 뱃지 표시 */}
-            {item.isLiked && <HeartBadge>💜 찜함</HeartBadge>}
-          </ProductCard>
-        ))}
-      </GridContainer>
+              {/* 하트 버튼을 따로 두어 싱글/더블클릭 충돌을 원천 차단 */}
+              <HeartButton onClick={(e) => handleToggleLike(item.id, e)}>
+                💜 찜함
+              </HeartButton>
+            </ProductCard>
+          ))}
+        </GridContainer>
+      )}
     </Container>
   );
 }
