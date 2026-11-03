@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
+import AxiosApi from "../api/AxiosApi";
 import Button from "../Components/common/Button";
 import BottomBar from "../Components/common/BottomBar";
 
@@ -98,6 +99,24 @@ const ReservationDetail = () => {
   const { id } = useParams(); // URL에서 상품 번호(id) 가져오기
   const navigate = useNavigate();
 
+  // 1. 백엔드에서 받아온 상품 정보를 담을 상태 (초기값 null)
+  const [product, setProduct] = useState(null);
+
+  // 2. 페이지가 처음 열릴 때(또는 id가 바뀔 때) 백엔드에서 데이터 가져오기
+  useEffect(() => {
+    const fetchProductDetail = async () => {
+      try {
+        // 백엔드 API 호출 (함수명은 실제 만드신 AxiosApi 규격에 맞게 조정하세요)
+        const response = await AxiosApi.getReservationDetail(id);
+        setProduct(response.data); // 받아온 콘서트/상품 객체 데이터 저장
+      } catch (error) {
+        console.error("상품 상세 정보를 불러오는 중 오류 발생:", error);
+      }
+    };
+
+    fetchProductDetail();
+  }, [id]);
+
   // 각 섹션으로 스크롤 이동을 위한 useRef 선언
   const sectionRefs = {
     notice: useRef(null),
@@ -121,6 +140,15 @@ const ReservationDetail = () => {
   const handleBookingClick = () => {
     navigate(`/reservation/select/${id}`);
   };
+
+  // 데이터를 아직 불러오는 중일 때의 처리 (로딩 바나 문구)
+  if (!product) {
+    return (
+      <Container>
+        <p>상품 정보를 불러오는 중입니다...</p>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -148,34 +176,33 @@ const ReservationDetail = () => {
       {/* 3. 각 상세 정보 섹션들 */}
       <SectionBox ref={sectionRefs.notice}>
         <h2>공지사항</h2>
-        <p>관람객 입장 안내 및 안전 수칙에 대한 공지사항 샘플 텍스트입니다.</p>
+        <p>{product.content || "등록된 공지사항이 없습니다."}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.casting}>
         <h2>캐스팅</h2>
-        <p>출연진 정보 샘플: 최재림, 이해원, 송원근, 에블린 등</p>
+        <p>콘서트명: {product.title}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.detail}>
         <h2>상품상세</h2>
-        <p>
-          본 상품의 상세 소개 및 시놉시스, 주요 특징에 대한 설명이 들어갑니다.
-        </p>
+        <p>{product.content}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.price}>
         <h2>가격 및 할인 정보</h2>
         <p>
-          VIP석 150,000원 | R석 120,000원 | S석 90,000원 | A석 60,000원
-          <br />
-          장애인 및 국가유공자 30% 할인 적용 가능
+          기본 가격:{" "}
+          {product.price
+            ? product.price.toLocaleString() + "원"
+            : "가격 정보 없음"}
         </p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.guide}>
         <h2>이용안내</h2>
         <p>
-          관람 연령: 중학생 이상 관람가 / 러닝타임: 150분 (인터미션 15분 포함)
+          상품 ID: {product.id} / {product.title} 이용 안내입니다.
         </p>
       </SectionBox>
 

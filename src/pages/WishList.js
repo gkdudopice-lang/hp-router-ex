@@ -79,6 +79,8 @@ const ProductCard = styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
+    padding-right: 70px; /* 하트 버튼과 겹치지 않도록 오른쪽 여백 추가 */
+    position: relative; /* 하트 버튼을 절대 위치로 배치하기 위해 부모 요소에 position 설정 */
   }
 
   .title {
@@ -202,7 +204,7 @@ export default function WishList() {
           <EmptyBox>
             <p>❤️ 찜한 상품이 없습니다.</p>
             <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "6px" }}>
-              상품 전체 페이지에서 마음에 드는 상품을 더블클릭해 보세요!
+              상품 전체 페이지에서 마음에 드는 상품을 클릭해 보세요!
             </p>
           </EmptyBox>
         )}

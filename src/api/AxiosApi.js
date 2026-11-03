@@ -1,5 +1,4 @@
 import axios from "axios"; // 비동기 통신 라이브러리
-import BoardDetail from "../pages/boards/BoardDetail";
 const HM_DOMAIN = "http://localhost:8111";
 
 const AxiosApi = {
@@ -54,6 +53,16 @@ const AxiosApi = {
   // 회원 목록 페이지 조회
   // 회원 삭제
   // 회원 상세 조회
+
+  // 1. 전체 콘서트 목록 가져오기 함수
+  getAllConcerts: async () => {
+    return await axios.get(`${HM_DOMAIN}/concerts`);
+  },
+
+  // 2. 특정 콘서트 상세 정보 가져오기 함수
+  getReservationDetail: async (concertId) => {
+    return await axios.get(`${HM_DOMAIN}/concerts/${concertId}`);
+  },
 };
 
 export default AxiosApi;

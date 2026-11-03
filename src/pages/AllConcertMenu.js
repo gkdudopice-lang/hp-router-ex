@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Input from "../Components/common/Input";
+import AxiosApi from "../api/AxiosApi";
 
 /* ───────── 스타일 컴포넌트 ───────── */
 const Container = styled.div`
@@ -89,6 +90,8 @@ const ProductCard = styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
+    padding-right: 70px; /* 하트 버튼과 겹치지 않도록 오른쪽 여백 추가 */
+    position: relative; /* 하트 버튼을 절대 위치로 배치하기 위해 부모 요소에 position 설정 */
   }
 
   .title {
@@ -152,32 +155,48 @@ export default function AllConcertMenu() {
   const storageKey = `wishlist_${currentUserId}`;
 
   // 전체 상품 초기 데이터
-  const [products, setProducts] = useState([
-    { id: 1, title: "뮤지컬 엘리자벳", price: "140,000원", isLiked: false },
-    { id: 2, title: "가을 인디 콘서트", price: "55,000원", isLiked: false },
-    { id: 3, title: "클래식 오케스트라", price: "80,000원", isLiked: false },
-    { id: 4, title: "세미나룸 대여", price: "20,000원", isLiked: false },
-    { id: 5, title: "재즈 라이브 페스티벌", price: "66,000원", isLiked: false },
-    { id: 6, title: "연극 보잉보잉", price: "40,000원", isLiked: false },
-  ]);
+  const [products, setProducts] = useState([]);
 
   // 계정별 찜 상태 동기화 함수
-  const syncWishlistState = () => {
+  const syncWishlistState = (originProducts) => {
     const savedWishlist = JSON.parse(localStorage.getItem(storageKey)) || [];
-    setProducts((prevProducts) =>
-      prevProducts.map((product) => ({
-        ...product,
-        isLiked: savedWishlist.some((item) => item.id === product.id),
-      })),
-    );
+    return originProducts.map((product) => ({
+      ...product,
+      isLiked: savedWishlist.some((item) => item.id === product.id),
+    }));
   };
 
+  // 백엔드에서 전체 상품 데이터 가져오기
   useEffect(() => {
-    syncWishlistState();
+    const fetchConcerts = async () => {
+      try {
+        const response = await AxiosApi.getAllConcerts();
+
+        const concertList = Array.isArray(response.data) ? response.data : [];
+
+        // 백엔드 데이터 가공
+        const serverProducts = concertList.map((item) => ({
+          id: item.id,
+          title: item.title,
+          price: item.price
+            ? item.price.toLocaleString() + "원"
+            : "가격 정보 없음",
+          PosterUrl: item.PosterUrl, // 초기 찜 상태는 false
+        }));
+
+        // 받아온 상품들에 현재 계정의 찜 상태를 반영하여 세팅
+        const syncedProducts = syncWishlistState(serverProducts);
+        setProducts(syncedProducts);
+      } catch (error) {
+        console.error("콘서트 목록을 불러오는 중 오류 발생:", error);
+      }
+    };
+
+    fetchConcerts();
 
     const handleStorageChange = (e) => {
       if (e.key === storageKey || e.type === "wishlistUpdated") {
-        syncWishlistState();
+        setProducts((prevProducts) => syncWishlistState(prevProducts));
       }
     };
 
@@ -210,9 +229,11 @@ export default function AllConcertMenu() {
     window.dispatchEvent(new Event("wishlistUpdated"));
   };
 
-  const filteredProducts = products.filter((item) =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredProducts = Array.isArray(products)
+    ? products.filter((item) =>
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : [];
 
   return (
     <Container>
@@ -238,11 +259,24 @@ export default function AllConcertMenu() {
             <ProductCard
               key={item.id}
               onClick={() => {
-                // 싱글 클릭 시 상세 페이지 이동 (필요시 경로 연결)
-                // navigate(`/reservation/detail/${item.id}`);
+                navigate(`/reservation/detail/${item.id}`);
               }}
             >
-              <div className="thumb">상품 이미지</div>
+              <div className="thumb">
+                {item.posterUrl ? (
+                  <img
+                    src={item.posterUrl}
+                    alt={item.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  "상품 이미지"
+                )}
+              </div>
 
               <div className="info-area">
                 <div className="title">{item.title}</div>
@@ -259,7 +293,7 @@ export default function AllConcertMenu() {
             </ProductCard>
           ))
         ) : (
-          <NoResult>검색 결과가 없습니다.</NoResult>
+          <NoResult>상품을 불러오는 중이거나 검색 결과가 없습니다.</NoResult>
         )}
       </GridContainer>
     </Container>
