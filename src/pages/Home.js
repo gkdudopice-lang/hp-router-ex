@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import CustomCalendar from "../Components/common/CustomCalendar";
 import { Link } from "react-router-dom";
+import AxiosApi from "../api/AxiosApi";
 
 const ContentWrapper = styled.div`
   display: flex;
@@ -50,7 +51,7 @@ const ProductCard = styled.div`
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  height: 150px;
+  height: 180px; /* 이미지 공간을 고려해 높이 살짝 조정 */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -63,8 +64,11 @@ const ProductCard = styled.div`
 
   h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
     color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   p {
@@ -112,19 +116,64 @@ const KeywordButton = styled.button`
 
 const Home = () => {
   const navigate = useNavigate();
-  const [selectedFilter, setSelectedFilter] = useState("전체 상품");
+
+  const [concertList, setConcertList] = useState([]); // 백엔드에서 받아온 전체 콘서트 목록
+  const [filteredProducts, setFilteredProducts] = useState([]); // 화면에 보여줄 상단 카드 4개
+  const [selectedDate, setSelectedDate] = useState(""); // 캘린더에서 선택한 날짜
+  const [selectedFilter, setSelectedFilter] = useState("인기 추천"); // 선택된 필터 키워드
 
   // 필터 키워드 목록
   const keywords = ["인기 추천", "신규 등록", "오픈 예정", "마감 임박"];
 
+  // 1. 처음 페이지 켤 때 백엔드에서 전체 콘서트 데이터 가져오기
+  useEffect(() => {
+    const fetchHomeConcerts = async () => {
+      try {
+        const response = await AxiosApi.getAllConcerts();
+        const data = Array.isArray(response.data) ? response.data : [];
+        setConcertList(data);
+        setFilteredProducts(data.slice(0, 4)); // 최초 4개 세팅
+      } catch (error) {
+        console.error("홈 화면 콘서트 목록 불러오기 실패:", error);
+      }
+    };
+    fetchHomeConcerts();
+  }, []);
+
+  // 2. 날짜나 필터 버튼이 바뀔 때마다 상단 4개 상품 필터링 및 정렬
+  useEffect(() => {
+    if (concertList.length === 0) return;
+
+    let result = [...concertList];
+
+    // 날짜가 선택된 경우 (필요에 따라 필터 로직 확장 가능)
+    if (selectedDate) {
+      console.log("선택된 날짜 필터 적용:", selectedDate);
+    }
+
+    // 필터 키워드별 분기 처리
+    if (selectedFilter === "인기 추천") {
+      result = result.sort((a, b) => b.id - a.id); // 최신 등록순 등 예시 정렬
+    } else if (selectedFilter === "신규 등록") {
+      result = result.slice().reverse(); // 역순 정렬 예시
+    } else if (selectedFilter === "마감 임박") {
+      result = result.sort((a, b) => a.price - b.price); // 가격순 정렬 예시
+    } else if (selectedFilter === "오픈 예정") {
+      result = result.slice(5, 9); // 임의의 구간 슬라이스 예시
+    }
+
+    // 상단에는 항상 4개만 노출
+    setFilteredProducts(result.slice(0, 4));
+  }, [selectedDate, selectedFilter, concertList]);
+
   const handleCardClick = (id) => {
-    // 💡 상세 페이지 경로(/reservation/detail/:id)에 맞게 수정했습니다!
     navigate(`/reservation/detail/${id}`);
   };
 
   // 캘린더에서 날짜를 선택했을 때 실행되는 함수
   const handleDateSelect = (formattedDate) => {
     console.log("홈 화면에서 받은 선택 날짜:", formattedDate);
+    setSelectedDate(formattedDate);
   };
 
   return (
@@ -132,23 +181,64 @@ const Home = () => {
       <ProductSection>
         <ViewAllLink to="/concertlist">상품 전체보기 &gt;</ViewAllLink>
 
-        {/* 상단 상품 카드 4개 영역 */}
+        {/* 상단 상품 카드 4개 영역 (백엔드 더미 데이터 연동) */}
         <TopSection>
-          {[1, 2, 3, 4].map((item) => (
-            <ProductCard key={item} onClick={() => handleCardClick(item)}>
-              <h3>상품 {item}</h3>
-              <p>상품 상세 설명 안내</p>
-              <span
-                style={{
-                  fontSize: "12px",
-                  color: "#c327eb",
-                  fontWeight: "bold",
-                }}
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((concert) => (
+              <ProductCard
+                key={concert.id}
+                onClick={() => handleCardClick(concert.id)}
               >
-                예약하기 &gt;
-              </span>
-            </ProductCard>
-          ))}
+                {/* 포스터 이미지 영역 */}
+                <div
+                  style={{
+                    height: "70px",
+                    background: "#f0f0f0",
+                    borderRadius: "6px",
+                    overflow: "hidden",
+                  }}
+                >
+                  {concert.posterUrl ? (
+                    <img
+                      src={concert.posterUrl}
+                      alt={concert.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                        color: "#888",
+                        fontSize: "11px",
+                      }}
+                    >
+                      이미지 준비중
+                    </div>
+                  )}
+                </div>
+                <h3>{concert.title}</h3>
+                <p>{concert.location || "공연장 정보 없음"}</p>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#c327eb",
+                    fontWeight: "bold",
+                  }}
+                >
+                  예약하기 &gt;
+                </span>
+              </ProductCard>
+            ))
+          ) : (
+            <p>데이터를 불러오는 중입니다...</p>
+          )}
         </TopSection>
       </ProductSection>
 
