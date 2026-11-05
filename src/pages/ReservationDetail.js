@@ -107,7 +107,7 @@ const ReservationDetail = () => {
     const fetchProductDetail = async () => {
       try {
         // 백엔드 API 호출 (함수명은 실제 만드신 AxiosApi 규격에 맞게 조정하세요)
-        const response = await AxiosApi.getReservationDetail(id);
+        const response = await AxiosApi.getConcertDetail(id);
         setProduct(response.data); // 받아온 콘서트/상품 객체 데이터 저장
       } catch (error) {
         console.error("상품 상세 정보를 불러오는 중 오류 발생:", error);

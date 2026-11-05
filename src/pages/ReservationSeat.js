@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import Button from "../Components/common/Button"; // 기존에 쓰던 공통 버튼 그대로 활용
+import Button from "../Components/common/Button";
 import BottomBar from "../Components/common/BottomBar";
-
+import axios from "axios";
 /* ───────── 스타일 컴포넌트 ───────── */
 const Container = styled.div`
   max-width: 500px;
@@ -155,7 +155,8 @@ const ReservationSeat = () => {
 
   // 앞 페이지에서 넘어온 날짜와 회차 정보
   const { date, sessionId } = location.state || {};
-
+  // 일단 테스트용 값
+  const memberId = 1;
   // 30개의 좌석 데이터 (A~E열, 각 6석)
   const [seats, setSeats] = useState([
     { id: "A1", name: "A1", isReserved: false },
@@ -197,6 +198,8 @@ const ReservationSeat = () => {
   // 선택한 좌석 번호들을 담을 배열
   const [selectedSeats, setSelectedSeats] = useState([]);
 
+  // 예매 요청 중복 방지
+  const [loading, setLoading] = useState(false);
   // 좌석 클릭 이벤트
   const handleSeatClick = (seat) => {
     if (seat.isReserved) return; // 팔린 좌석은 클릭 방지
@@ -213,25 +216,49 @@ const ReservationSeat = () => {
   };
 
   // 예매하기 버튼 클릭 시 (백엔드로 보낼 데이터 정리)
-  const handleBooking = () => {
-    if (selectedSeats.length === 0) return;
 
-    const bookingData = {
-      productId: id,
-      date: date,
-      sessionId: sessionId,
-      seats: selectedSeats,
-      bookingTime: new Date().toISOString(), // 예매 시간
-    };
-
-    console.log("백엔드로 전송될 최종 데이터:", bookingData);
-
-    // 다음 결제/완료 페이지로 이동
-    navigate(`/reservation/payment/${id}`, {
-      state: bookingData,
-    });
+  const bookingData = {
+    productId: id,
+    date: date,
+    sessionId: sessionId,
+    seats: selectedSeats,
+    bookingTime: new Date().toISOString(), // 예매 시간
   };
+  // 예매하기 버튼
+  const handleBooking = async () => {
+    if (selectedSeats.length == 0 || loading) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const reservationData = {
+        scheduleId: sessionId,
+        seatNumbers: selectedSeats,
+      };
+      console.log("예매 전송 데이터:", reservationData);
+      const res = await axios.post(
+        "http://localhost:8111/reservations",
+        reservationData,
+      );
 
+      navigate(`/reservation/payment/${res.data.reservationId}`, {
+        state: {
+          date: date,
+          sessionId: sessionId,
+          seats: selectedSeats,
+          reservation: res.data,
+        },
+      });
+    } catch (error) {
+      console.error("예매 실패 상태:", error.response?.status);
+      console.error("서버 오류 내용:", error.response?.data);
+      console.error("오류 메시지:", error.message);
+
+      alert("예매 저장에 실패 했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
   // 6개씩 끊어서 행(Row)으로 나누기
   const rows = [
     seats.slice(0, 6),

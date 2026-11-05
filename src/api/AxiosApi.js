@@ -1,68 +1,71 @@
-import axios from "axios"; // 비동기 통신 라이브러리
+import axios from "axios";
+
 const HM_DOMAIN = "http://localhost:8111";
 
 const AxiosApi = {
-  // auth controller
-  // 회원 가입 여부 확인 (GET)
-  memberExist: async (email) => {
-    return await axios.get(HM_DOMAIN + `/auth/exists/${email}`);
-  },
-  // 회원 가입 (POST)
-  memberSignup: async (email, pwd, name) => {
-    return await axios.post(HM_DOMAIN + "/auth/signup", { email, pwd, name });
-  },
-  // 로그인 (POST)
-  memberLogin: async (email, pwd) => {
-    return await axios.post(HM_DOMAIN + "/auth/login", { email, pwd });
-  },
+  // 회원 관련
+  memberExist: async (email) => axios.get(HM_DOMAIN + `/auth/exists/${email}`),
 
-  // board controller
-  // 게시글 쓰기 (POST)
-  boardWrite: async (title, content, email) => {
-    return await axios.post(HM_DOMAIN + "/board/write", {
+  memberSignup: async (email, pwd, name) =>
+    axios.post(HM_DOMAIN + "/auth/signup", {
+      email,
+      pwd,
+      name,
+    }),
+
+  memberLogin: async (email, pwd) =>
+    axios.post(HM_DOMAIN + "/auth/login", {
+      email,
+      pwd,
+    }),
+
+  // 게시판 관련
+  boardWrite: async (title, content, email) =>
+    axios.post(HM_DOMAIN + "/board/write", {
       title,
       content,
       email,
-    });
-  },
-  // 게시글 전체 목록 조회 (GET)
-  boardList: async () => {
-    return await axios.get(HM_DOMAIN + "/board/list");
-  },
-  // 게시글 상세 조회
-  boardDetail: async (id) => {
-    return await axios.get(HM_DOMAIN + `/board/${id}`);
-  },
-  // 게시글 페이지 조회
-  // 게시글 수정
-  // 게시글 삭제
-  // 게시슬 검색
+    }),
 
-  // comment controller
-  // 댓글 쓰기
-  // 댓글 목록 조회
-  // 댓글 수정
-  // 댓글 삭제
+  boardList: async () => axios.get(HM_DOMAIN + "/board/list"),
 
-  // member constroller
-  // 회원 목록 조회
-  memberList: async () => {
-    return await axios.get(HM_DOMAIN + "/member/list");
-  },
-  // 회원 정보 수정
-  // 회원 목록 페이지 조회
-  // 회원 삭제
-  // 회원 상세 조회
+  boardDetail: async (id) => axios.get(HM_DOMAIN + `/board/${id}`),
 
-  // 1. 전체 콘서트 목록 가져오기 함수
-  getAllConcerts: async () => {
-    return await axios.get(`${HM_DOMAIN}/concerts`);
-  },
+  memberList: async () => axios.get(HM_DOMAIN + "/member/list"),
 
-  // 2. 특정 콘서트 상세 정보 가져오기 함수
-  getReservationDetail: async (concertId) => {
-    return await axios.get(`${HM_DOMAIN}/concerts/${concertId}`);
-  },
+  // 예매 생성
+  createReservation: async (reservationData) =>
+    axios.post(HM_DOMAIN + "/reservations", reservationData),
+  // 예매 상세 조회
+  getReservation: async (reservationId) =>
+    axios.get(HM_DOMAIN + `/reservations/${reservationId}`),
+
+  // 공연 회차 관련
+  getSchedules: async (concertId) =>
+    axios.get(HM_DOMAIN + `/concerts/${concertId}/schedules`),
+  //공연 회차 등록
+  createSchedule: async (concertId, scheduleData) =>
+    axios.post(HM_DOMAIN + `/concerts/${concertId}/schedules`, scheduleData),
+
+  // 좌석 관련
+  createSeats: async (scheduleId, seatNumbers) =>
+    axios.post(HM_DOMAIN + `/seats/demo/${scheduleId}`, seatNumbers),
+  // 회차별 잔여 좌석 수 조회
+  getRemainingSeats: async (scheduleId) =>
+    axios.get(HM_DOMAIN + `/seats/${scheduleId}/remaining`),
+  //회차별 좌석 목록조회
+  getSeats: async (scheduleId) => axios.get(HM_DOMAIN + `/seats/${scheduleId}`),
+
+  // 💡 [추가] ReservationDetail.js 에러를 해결하기 위한 별칭 함수 추가
+  getReservationDetail: async (reservationId) =>
+    axios.get(HM_DOMAIN + `/reservations/${reservationId}`),
+
+  // 💡 [추가] 콘서트(상품) 상세 정보 조회
+  getConcertDetail: async (concertId) =>
+    axios.get(HM_DOMAIN + `/concerts/${concertId}`),
+
+  // 💡 [추가] 전체 콘서트 목록 조회 (AllConcertMenu.js 에러 해결용)
+  getAllConcerts: async () => axios.get(HM_DOMAIN + "/concerts"),
 };
 
 export default AxiosApi;

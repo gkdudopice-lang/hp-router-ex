@@ -159,6 +159,14 @@ export default function AllConcertMenu() {
 
   // 계정별 찜 상태 동기화 함수
   const syncWishlistState = (originProducts) => {
+    const isLogin = localStorage.getItem("isLogin");
+    // 로그인이 되어있지 않다면 찜 상태를 무조건 false로 만들어서 리턴
+    if (!isLogin) {
+      return originProducts.map((product) => ({
+        ...product,
+        isLiked: false, // 로그인 안 했으면 무조건 찜 해제 상태
+      }));
+    }
     const savedWishlist = JSON.parse(localStorage.getItem(storageKey)) || [];
     return originProducts.map((product) => ({
       ...product,
@@ -212,6 +220,13 @@ export default function AllConcertMenu() {
   // 하트 버튼을 클릭했을 때 찜 상태(On/Off) 토글 및 계정별 로컬스토리지 저장
   const handleToggleLike = (id, e) => {
     e.stopPropagation(); // 카드 클릭(상세페이지 이동 등) 이벤트와 충돌 방지
+
+    const isLogin = localStorage.getItem("isLogin");
+    if (!isLogin) {
+      alert("로그인이 필요한 서비스입니다.");
+      navigate("/login"); // 로그인 페이지로 이동 (navigate 설정이 되어 있는 경우)
+      return; // 로그인이 안 되어 있으므로 아래 찜하기 로직이 실행되지 않고 즉시 차단됨!
+    }
 
     const updatedProducts = products.map((item) => {
       if (item.id === id) {

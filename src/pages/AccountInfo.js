@@ -8,9 +8,9 @@ const AccountInfo = () => {
   const navigate = useNavigate();
 
   const [userInfo, setUserInfo] = useState({
-    userId: "test_user",
-    email: "test@example.com",
-    name: "홍길동",
+    userId: "gkdud",
+    email: "gkdudopice@gmail.com",
+    name: "이하영",
     phone: "010-1234-5678",
   });
 

@@ -10,6 +10,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: #f8f9fa;
+  min-width: 750px; /* 모바일 화면 최소 너비 설정 */
 `;
 
 const Header = styled.header`
@@ -143,11 +144,12 @@ export default function Layout() {
   // 3. 로그아웃 처리 함수
   const handleLogout = () => {
     localStorage.removeItem("isLogin");
+    localStorage.removeItem("userId");
 
     setIsLogIn(false);
     setUserId("");
     alert("로그아웃 되었습니다.");
-    navigate("/");
+    window.location.replace("/");
   };
 
   const handleSearchSubmit = () => {
