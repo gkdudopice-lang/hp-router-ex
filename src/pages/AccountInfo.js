@@ -3,37 +3,53 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import BackButton from "../Components/common/BackButton";
+import AxiosApi from "../api/AxiosApi";
 
 const AccountInfo = () => {
   const navigate = useNavigate();
 
   const [userInfo, setUserInfo] = useState({
-    userId: "gkdud",
-    email: "gkdudopice@gmail.com",
-    name: "이하영",
-    phone: "010-1234-5678",
+    userId: "",
+    email: "",
+    name: "",
+    phone: "",
   });
 
-  const [loading, setLoading] = useState(false); // 임시로 로딩 false 처리
+  // ⭐ 수정: 처음에는 로딩 상태
+  const [loading, setLoading] = useState(true);
 
-  /* 백엔드 API 연동 부 (추후 백엔드 준비되면 주석 해제)
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("/api/user/profile");
-        if (response.ok) {
-          const data = await response.json();
-          setUserInfo(data);
+        // 1. 로그인할 때 저장한 회원 번호 가져오기
+        const memberId = localStorage.getItem("memberId");
+
+        if (!memberId) {
+          alert("회원 번호를 찾을 수 없습니다. 다시 로그인해 주세요.");
+          return;
         }
+
+        // 2. 백엔드에 회원 번호 전달
+        const response = await AxiosApi.getMypage(memberId);
+
+        // 3. DB에서 받은 회원 정보 저장
+        setUserInfo({
+          userId: response.data.userId,
+          email: response.data.email,
+          name: response.data.name,
+          phone: response.data.phone,
+        });
+
+        console.log("DB에서 가져온 회원 정보:", response.data);
       } catch (error) {
-        console.error("유저 정보를 불러오는 데 실패했습니다:", error);
+        console.error("회원 정보 조회 실패:", error);
+        alert("회원 정보를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
     };
     fetchUserData();
   }, []);
-  */
 
   if (loading) {
     return (

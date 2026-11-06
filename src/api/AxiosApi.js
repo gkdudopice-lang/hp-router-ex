@@ -4,20 +4,31 @@ const HM_DOMAIN = "http://localhost:8111";
 
 const AxiosApi = {
   // 회원 관련
-  memberExist: async (email) => axios.get(HM_DOMAIN + `/auth/exists/${email}`),
 
-  memberSignup: async (email, pwd, name) =>
+  // 아이디 중복 확인
+  memberExist: async (userId) =>
+    axios.get(HM_DOMAIN + `/auth/exists/id/${userId}`),
+
+  // 이메일 중복 확인
+  emailExist: async (email) => axios.get(HM_DOMAIN + `/auth/exists/${email}`),
+
+  memberSignup: async (userId, pwd, name, phone, email) =>
     axios.post(HM_DOMAIN + "/auth/signup", {
+      userId,
+      name,
+      phone,
       email,
       pwd,
-      name,
     }),
 
-  memberLogin: async (email, pwd) =>
+  memberLogin: async (userId, pwd) =>
     axios.post(HM_DOMAIN + "/auth/login", {
-      email,
+      userId,
       pwd,
     }),
+
+  // 마이페이지 회원정보 조회
+  getMypage: (memberId) => axios.get(`${HM_DOMAIN}/auth/mypage/${memberId}`),
 
   // 게시판 관련
   boardWrite: async (title, content, email) =>

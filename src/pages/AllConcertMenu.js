@@ -14,6 +14,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 1150px;
 `;
 
 const HeaderBox = styled.div`
@@ -189,7 +190,10 @@ export default function AllConcertMenu() {
           price: item.price
             ? item.price.toLocaleString() + "원"
             : "가격 정보 없음",
-          PosterUrl: item.PosterUrl, // 초기 찜 상태는 false
+          posterUrl:
+            item.posterUrl ||
+            item.PosterUrl ||
+            `https://picsum.photos/id/${item.id + 100}/400/300`,
         }));
 
         // 받아온 상품들에 현재 계정의 찜 상태를 반영하여 세팅
