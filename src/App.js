@@ -1,13 +1,10 @@
 import "./App.css";
-import About from "./pages/About";
+
 import Home from "./pages/Home";
-import Profile from "./pages/Profile";
+
 import Layout from "./pages/Layout";
 import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
-import BoardList from "./pages/boards/BoardList";
-import BoardWrite from "./pages/boards/BoardWrite";
-import BoardDetail from "./pages/boards/BoardDetail";
 import ReservationDetail from "./pages/ReservationDetail";
 import ReservationSelect from "./pages/ReservationSelect";
 import ReservationSeat from "./pages/ReservationSeat";
@@ -65,11 +62,6 @@ function App() {
           <Route path="/mypage/payment" element={<PaymentManage />} />
           <Route path="/payment-register" element={<PaymentRegister />} />
           <Route path="/concertlist" element={<AllConcertMenu />} />
-          <Route path="/board" element={<BoardList />} />
-          <Route path="/board/write" element={<BoardWrite />} />
-          <Route path="/board/:boardId" element={<BoardDetail />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/profile/:name" element={<Profile />} />
         </Route>
       </Routes>
     </Router>
