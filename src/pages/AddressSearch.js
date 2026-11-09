@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import Input from "../Components/common/Input";
-import Button from "../Components/common/Button"; // 공통 버튼 활용
+import Button from "../Components/common/Button";
 import BackButton from "../Components/common/BackButton";
 
 const Container = styled.div`
@@ -29,189 +28,227 @@ const HeaderRow = styled.div`
     margin: 0 auto;
   }
 `;
-const AddressBox = styled.div`
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 40px 20px;
-  min-height: 150px;
+
+const AddressForm = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  text-align: center;
-
-  p {
-    font-size: 15px;
-    color: #64748b;
-    margin: 0;
-  }
+  gap: 16px;
 `;
 
-const AddressCard = styled.div`
-  width: 100%;
-  background: #ffffff;
-  border: 2px solid ${({ $isDefault }) => ($isDefault ? "#c327eb" : "#e2e8f0")};
-  border-radius: 16px;
-  padding: 16px 20px;
-  box-sizing: border-box;
+const FormRow = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s;
+  flex-direction: column;
+  gap: 8px;
 
-  &:hover {
-    border-color: #c327eb;
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
   }
 
-  .info-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  input {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
 
-    .tag {
-      background-color: #f3e8ff;
-      color: #c327eb;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      width: fit-content;
+    &:focus {
+      border-color: #c327eb;
     }
 
-    .address-text {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1e293b;
+    &:read-only {
+      background: #f8fafc;
     }
   }
 `;
 
-const DeleteButton = styled.button`
-  background: none;
-  border: none;
+const SearchButtonRow = styled.div`
+  display: flex;
+  gap: 8px;
+
+  button {
+    padding: 0 14px;
+    border: 1px solid #c327eb;
+    border-radius: 8px;
+    background: white;
+    color: #c327eb;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+`;
+
+const TipBox = styled.div`
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
   font-size: 13px;
-  color: #ef4444;
-  cursor: pointer;
-  font-weight: 600;
+  color: #475569;
+  line-height: 1.5;
 
-  &:hover {
-    text-decoration: underline;
+  h4 {
+    margin: 0 0 8px 0;
+    color: #1e293b;
+    font-size: 14px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 16px;
   }
 `;
 
-export default function AddressManagement() {
+export default function AddressSearch() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const newAddress = location.state?.selectedAddress;
 
-  const [addresses, setAddresses] = useState(() => {
-    const saved = localStorage.getItem("saved_addresses");
-    return saved ? JSON.parse(saved) : [];
-  });
+  // ⭐ 수정: 우편번호, 주소, 상세주소 상태
+  const [postCode, setPostCode] = useState("");
+  const [address, setAddress] = useState("");
+  const [detailAddress, setDetailAddress] = useState("");
 
-  useEffect(() => {
-    if (newAddress) {
-      const trimmedNewAddress = newAddress.trim();
-
-      setAddresses((prev) => {
-        // 이미 목록에 있는 주소인지 검사
-        if (prev.includes(trimmedNewAddress)) {
-          return prev; // 중복이면 조용히 기존 목록 유지
-        }
-        if (prev.length >= 10) {
-          alert("배송지는 최대 10개까지만 등록할 수 있습니다.");
-          return prev;
-        }
-
-        const updated = [...prev, trimmedNewAddress];
-        localStorage.setItem("saved_addresses", JSON.stringify(updated));
-        return updated;
-      });
-
-      // state 초기화 (중복 트리거 방지)
-      navigate(location.pathname, { replace: true, state: {} });
+  // ⭐ 수정: 다음 우편번호 검색 함수
+  const handleSelectAddress = () => {
+    if (!window.daum || !window.daum.Postcode) {
+      alert("주소 검색 API를 불러오지 못했습니다.");
+      return;
     }
-  }, [newAddress, location.pathname, navigate]);
 
-  const handleDelete = (indexToDelete) => {
-    setAddresses((prev) => {
-      const updated = prev.filter((_, index) => index !== indexToDelete);
-      localStorage.setItem("saved_addresses", JSON.stringify(updated));
-      return updated;
-    });
+    new window.daum.Postcode({
+      oncomplete: function (data) {
+        let extraAddress = "";
+
+        // 도로명 주소일 경우 참고 항목 추가
+        if (data.addressType === "R") {
+          if (data.bname) {
+            extraAddress += data.bname;
+          }
+
+          if (data.buildingName) {
+            extraAddress += extraAddress
+              ? `, ${data.buildingName}`
+              : data.buildingName;
+          }
+        }
+
+        setPostCode(data.zonecode);
+
+        setAddress(
+          extraAddress ? `${data.address} (${extraAddress})` : data.address,
+        );
+
+        setDetailAddress("");
+      },
+    }).open();
   };
 
-  const handleSetDefault = (indexToSet) => {
-    const targetAddress = addresses[indexToSet];
+  // ⭐ 수정: 주소 초기화 함수
+  const cancelAddress = () => {
+    setPostCode("");
+    setAddress("");
+    setDetailAddress("");
+  };
 
-    // 💡 [수정 포인트]: alert을 setAddresses 바깥으로 분리!
-    // Strict Mode에서 상태 함수가 두 번 실행되더라도 alert은 오직 한 번만 뜨도록 보장합니다.
-    alert(`"${targetAddress}" (이)가 기본 배송지로 설정되었습니다.`);
+  // ⭐ 수정: 배송지 등록 함수
+  const handleRegisterAddress = () => {
+    if (!address) {
+      alert("주소를 먼저 검색해주세요.");
+      return;
+    }
 
-    setAddresses((prev) => {
-      const remaining = prev.filter((_, index) => index !== indexToSet);
-      const updated = [targetAddress, ...remaining];
-      localStorage.setItem("saved_addresses", JSON.stringify(updated));
-      return updated;
+    const fullAddress = detailAddress.trim()
+      ? `${address}, ${detailAddress.trim()}`
+      : address;
+
+    navigate("/profile/address", {
+      state: { selectedAddress: fullAddress },
     });
   };
 
   return (
     <Container>
       <HeaderRow>
-        <BackButton onClick={() => navigate("/mypage/account")}>〈</BackButton>
-        <h2>배송지 관리 ({addresses.length}/10)</h2>
+        <BackButton onClick={() => navigate("/profile/address")}>〈</BackButton>
+        <h2>배송지 검색</h2>
       </HeaderRow>
 
-      <p style={{ fontSize: "13px", color: "#64748b", margin: "-10px 0 0 0" }}>
-        💡 카드를 <strong>더블 클릭</strong>하시면 해당 주소가{" "}
-        <strong>기본 배송지</strong>로 변경됩니다!
-      </p>
+      <AddressForm>
+        {/* ⭐ 수정: 우편번호 */}
+        <FormRow>
+          <label>우편번호</label>
 
-      {addresses.length === 0 ? (
-        <AddressBox>
-          <p>등록된 배송지가 없어요</p>
-        </AddressBox>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {addresses.map((addr, index) => (
-            <AddressCard
-              key={`${addr}-${index}`}
-              $isDefault={index === 0}
-              onDoubleClick={() => handleSetDefault(index)}
-            >
-              <div className="info-wrap">
-                {index === 0 && <span className="tag">기본 배송지</span>}
-                <div className="address-text">{addr}</div>
-              </div>
-              <DeleteButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(index);
-                }}
-              >
-                삭제
-              </DeleteButton>
-            </AddressCard>
-          ))}
-        </div>
-      )}
+          <SearchButtonRow>
+            <input
+              type="text"
+              value={postCode}
+              placeholder="우편번호"
+              readOnly
+            />
 
-      {addresses.length < 10 ? (
-        <Button enabled={true} onClick={() => navigate("/address/search")}>
-          + 배송지 추가하기
-        </Button>
-      ) : (
-        <p style={{ textAlign: "center", fontSize: "13px", color: "#ef4444" }}>
-          배송지는 최대 10개까지 등록 가능합니다.{" "}
+            <button type="button" onClick={handleSelectAddress}>
+              주소 검색
+            </button>
+
+            <button type="button" onClick={cancelAddress}>
+              취소
+            </button>
+          </SearchButtonRow>
+        </FormRow>
+
+        {/* ⭐ 수정: 주소 */}
+        <FormRow>
+          <label>주소</label>
+          <input
+            type="text"
+            value={address}
+            placeholder="주소를 검색해주세요."
+            readOnly
+          />
+        </FormRow>
+
+        {/* ⭐ 수정: 상세주소 */}
+        <FormRow>
+          <label>상세주소</label>
+          <input
+            type="text"
+            value={detailAddress}
+            onChange={(e) => setDetailAddress(e.target.value)}
+            maxLength={100}
+            placeholder="상세주소를 입력해주세요."
+          />
+        </FormRow>
+      </AddressForm>
+
+      <TipBox>
+        <h4>tip</h4>
+        <p style={{ margin: "0 0 8px 0" }}>
+          아래와 같은 조합으로 검색하시면 더욱 정확한 결과를 찾을 수 있습니다.
         </p>
-      )}
+
+        <ul>
+          <li>
+            <strong>도로명 + 건물번호</strong> (예: 판교역로 166)
+          </li>
+          <li>
+            <strong>지역명(동/리) + 번지</strong> (예: 백현동 532)
+          </li>
+          <li>
+            <strong>지역명(동/리) + 건물명</strong> (예: 분당 주공)
+          </li>
+        </ul>
+      </TipBox>
+
+      <Button enabled={Boolean(address)} onClick={handleRegisterAddress}>
+        배송지 등록하기
+      </Button>
     </Container>
   );
 }
