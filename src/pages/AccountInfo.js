@@ -21,16 +21,8 @@ const AccountInfo = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // 1. 로그인할 때 저장한 회원 번호 가져오기
-        const memberId = localStorage.getItem("memberId");
-
-        if (!memberId) {
-          alert("회원 번호를 찾을 수 없습니다. 다시 로그인해 주세요.");
-          return;
-        }
-
-        // 2. 백엔드에 회원 번호 전달
-        const response = await AxiosApi.getMypage(memberId);
+        // JWt 토큰을 이용해 내 회원 정보 조회
+        const response = await AxiosApi.getMypage();
 
         // 3. DB에서 받은 회원 정보 저장
         setUserInfo({
