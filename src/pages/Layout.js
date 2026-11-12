@@ -4,6 +4,7 @@ import styled from "styled-components";
 import Button from "../Components/common/Button"; // 공통 버튼 컴포넌트 (폼 등 다른 곳에서 사용)
 import Input from "../Components/common/Input"; // 공통 인풋 컴포넌트
 import logoImg from "../img/사이트 로고.png";
+import AxiosInstance from "../api/AxiosInstance"; // 토큰 자동 처리 Axios 인스턴스
 
 const Container = styled.div`
   min-height: 100vh;
@@ -141,17 +142,24 @@ export default function Layout() {
     }
   }, []);
 
-  // 3. 로그아웃 처리 함수
-  const handleLogout = () => {
-    localStorage.removeItem("isLogin");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-
-    setIsLogIn(false);
-    setUserId("");
-    alert("로그아웃 되었습니다.");
-    window.location.replace("/");
+  // 3. 로그아웃 처리 함수 (백엔드 연동)
+  const handleLogout = async () => {
+    try {
+      // 👉 백엔드의 로그아웃 API 호출 (AxiosInstance가 알아서 accessToken을 헤더에 담아줍니다)
+      await AxiosInstance.post("/auth/logout");
+    } catch (error) {
+      console.error("서버 로그아웃 통신 중 에러 발생:", error);
+    } finally {
+      // 서버 통신 성공 여부와 상관없이 브라우저에 남은 찌꺼기(토큰 등)를 깔끔하게 청소
+      localStorage.removeItem("isLogin");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setIsLogIn(false);
+      setUserId("");
+      alert("로그아웃 되었습니다.");
+      window.location.replace("/");
+    }
   };
 
   const handleSearchSubmit = () => {
