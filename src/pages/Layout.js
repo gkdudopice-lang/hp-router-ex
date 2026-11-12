@@ -145,6 +145,8 @@ export default function Layout() {
   const handleLogout = () => {
     localStorage.removeItem("isLogin");
     localStorage.removeItem("userId");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
 
     setIsLogIn(false);
     setUserId("");

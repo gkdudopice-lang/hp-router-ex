@@ -3,7 +3,9 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../Components/common/Button";
 import BottomBar from "../Components/common/BottomBar";
-import axios from "axios";
+
+import AxiosApi from "../api/AxiosApi";
+
 /* ───────── 스타일 컴포넌트 ───────── */
 const Container = styled.div`
   max-width: 500px;
@@ -155,8 +157,7 @@ const ReservationSeat = () => {
 
   // 앞 페이지에서 넘어온 날짜와 회차 정보
   const { date, sessionId } = location.state || {};
-  // 일단 테스트용 값
-  const memberId = 1;
+
   // 30개의 좌석 데이터 (A~E열, 각 6석)
   const [seats, setSeats] = useState([
     { id: "A1", name: "A1", isReserved: false },
@@ -236,10 +237,7 @@ const ReservationSeat = () => {
         seatNumbers: selectedSeats,
       };
       console.log("예매 전송 데이터:", reservationData);
-      const res = await axios.post(
-        "http://localhost:8111/reservations",
-        reservationData,
-      );
+      const res = await AxiosApi.createReservation(reservationData);
 
       navigate(`/reservation/payment/${res.data.reservationId}`, {
         state: {

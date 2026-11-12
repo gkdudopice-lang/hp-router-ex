@@ -3,7 +3,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../Components/common/Button";
 import BottomBar from "../Components/common/BottomBar";
-
+import AxiosApi from "../api/AxiosApi";
+import AxiosInstance from "../api/AxiosInstance";
 /* ───────── 스타일 컴포넌트 ───────── */
 const Container = styled.div`
   max-width: 600px;
@@ -92,41 +93,86 @@ const ReservationPayment = () => {
   const navigate = useNavigate();
 
   // 이전 페이지(좌석 선택)에서 전달받은 데이터
-  const { date, sessionId, seats } = location.state || {
+  const { date, sessionId, seats, reservation } = location.state || {
     date: "2026-10-25",
     sessionId: 1,
     seats: ["A1", "A2"], // 테스트용 기본값
   };
 
   // 선택한 결제 수단 상태 ("card": 신용카드, "transfer": 계좌이체 등)
-  const [paymentMethod, setPaymentMethod] = require("react").useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("card");
 
   // 좌석당 가격 계산 (예시: 1석당 50,000원)
   const pricePerSeat = 50000;
   const totalAmount = seats ? seats.length * pricePerSeat : 0;
 
   // 결제 완료 버튼 클릭 시
-  const handlePaymentSubmit = () => {
-    const finalBookingData = {
-      productId: id,
-      date: date,
-      sessionId: sessionId,
-      seats: seats,
-      totalAmount: totalAmount,
-      paymentMethod: paymentMethod,
-      bookingNumber: "HP-" + Math.floor(100000 + Math.random() * 900000), // 예매 번호 생성
-      paidAt: new Date().toISOString(),
-    };
+  // 결제하기 버튼 클릭
+  // 결제하기 버튼 클릭
+  const handlePaymentSubmit = async () => {
+    // 1. 로그인 여부 확인
+    const isLogin = localStorage.getItem("isLogin") === "TRUE";
 
-    console.log("최종 결제 및 예매 완료 데이터:", finalBookingData);
-    alert("결제가 성공적으로 완료되었습니다!");
+    // 2. 예매 ID 확인
+    const reservationId = Number(reservation?.reservationId ?? id);
 
-    // 예매 완료 후 마이페이지(또는 예약 내역 확인 페이지)로 이동하면서 데이터 전달
-    navigate("/reservation/history", {
-      state: { newBooking: finalBookingData },
-    });
+    console.log("로그인 여부:", isLogin);
+    console.log("예매 ID:", reservationId);
+
+    // 3. 로그인 여부 확인
+    if (!isLogin) {
+      alert("로그인 정보가 없습니다. 결제가 취소되었습니다.");
+      navigate("/login");
+      return;
+    }
+
+    // 4. 예매 정보 확인
+    if (!Number.isInteger(reservationId) || reservationId <= 0) {
+      alert("예매 정보를 확인할 수 없습니다.");
+      return;
+    }
+
+    // 5. 로그인 확인 후 백엔드에 결제 요청
+    try {
+      const response = await AxiosInstance.post(
+        `/reservations/${reservationId}/payment`,
+      );
+      // 6. 백엔드 결제 성공 여부 확인
+      if (response.data.status !== "PAID") {
+        throw new Error("결제 완료 상태가 아닙니다.");
+      }
+
+      // 7. 최종 결제 데이터 생성
+      const finalBookingData = {
+        reservationId: response.data.reservationId,
+        scheduleId: response.data.scheduleId,
+        date: date,
+        seats: seats,
+        totalAmount: totalAmount,
+        paymentMethod: paymentMethod,
+        paidAt: new Date().toISOString(),
+      };
+
+      console.log("최종 결제 및 예매 완료 데이터:", finalBookingData);
+
+      alert("로그인 확인 완료! 결제가 성공적으로 완료되었습니다.");
+
+      // 8. 예매 내역으로 이동
+      navigate("/reservation/history", {
+        state: {
+          newBooking: finalBookingData,
+        },
+      });
+    } catch (error) {
+      console.error("결제 실패:", error.response?.data || error);
+
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "결제에 실패했습니다.",
+      );
+    }
   };
-
   return (
     <Container>
       {/* 1. 예매 정보 요약 박스 */}
