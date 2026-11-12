@@ -77,6 +77,7 @@ const Login = () => {
         localStorage.setItem("refreshToken", response.data.refreshToken);
 
         // ⭐ 수정 1: 로그인 상태 저장
+        localStorage.setItem("isLogin", "TRUE");
 
         // ⭐ 수정 2: 로그인 아이디 저장 (기존 코드 유지)
         localStorage.setItem("userId", inputId);

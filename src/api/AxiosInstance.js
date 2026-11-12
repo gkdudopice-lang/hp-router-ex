@@ -33,6 +33,7 @@ AxiosInstance.interceptors.response.use(
     if (err.response?.status !== 401 || isAuthCall || original._retry) {
       return Promise.reject(err);
     }
+    console.log("401 Unauthorized 발생, 토큰 재발급 시도:", original.url);
     original._retry = true; // 무한 재시도 방지
 
     try {
@@ -48,6 +49,7 @@ AxiosInstance.interceptors.response.use(
       const { data } = await reissuePromise;
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken); // Rotation: 새 값으로 교체
+      console.log("토큰 재발급 성공:", data);
       original.headers.Authorization = `Bearer ${data.accessToken}`;
       return AxiosInstance(original); // 원래 요청 재시도
     } catch (e) {
