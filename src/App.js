@@ -22,6 +22,7 @@ import PaymentManage from "./pages/PaymentManage";
 import PaymentRegister from "./pages/PaymentRegister";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AllConcertMenu from "./pages/AllConcertMenu";
+import KakaoCallback from "./pages/KakaoCallback";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         {/* 1. 로그인과 회원가입은 레이아웃 없이 단독 페이지로 설정 */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/oauth/kakao" element={<KakaoCallback />} />
 
         {/* 2. 기본 경로("/")를 포함하여 Layout을 거치는 페이지들 (홈 화면이 먼저 뜸) */}
         <Route element={<Layout />}>

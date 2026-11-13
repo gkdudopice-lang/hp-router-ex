@@ -53,6 +53,24 @@ const SignupText = styled.p`
     }
   }
 `;
+const KakaoBtn = styled.button`
+  width: 100%;
+  height: 50px;
+  color: #191919;
+  background-color: #fee500;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+`;
+
+// 카카오 인가 코드 요청 주소 (client_id = REST API 키, 공개돼도 되는 값)
+const KAKAO_AUTH_URL =
+  "https://kauth.kakao.com/oauth/authorize?response_type=code" +
+  `&client_id=${process.env.REACT_APP_KAKAO_CLIENT_ID}` +
+  "&redirect_uri=" +
+  encodeURIComponent(process.env.REACT_APP_KAKAO_REDIRECT_URI);
 
 const Login = () => {
   const [inputId, setInputId] = useState("");
@@ -115,6 +133,12 @@ const Login = () => {
         <Button type="submit" enabled={isValid}>
           로그인
         </Button>
+        <KakaoBtn
+          type="button"
+          onClick={() => (window.location.href = KAKAO_AUTH_URL)}
+        >
+          카카오 로그인
+        </KakaoBtn>
         <SignupText>
           계정이 없으신가요?
           <Link to="/signup">회원가입</Link>
