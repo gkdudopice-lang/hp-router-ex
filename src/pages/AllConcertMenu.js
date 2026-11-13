@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Input from "../Components/common/Input";
 import AxiosApi from "../api/AxiosApi";
@@ -150,7 +150,18 @@ const NoResult = styled.div`
 
 export default function AllConcertMenu() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation(); // 🌟 1. useLocation을 컴포넌트 최상단에서 선언
+
+  // 🌟 2. Layout에서 state로 넘겨준 searchTerm을 초기값으로 설정
+  const keywordFromLayout = location.state?.searchTerm || "";
+  const [searchTerm, setSearchTerm] = useState(keywordFromLayout);
+
+  // 🌟 3. 이미 페이지가 열린 상태에서 Layout을 통해 새로운 검색어가 또 들어올 때 동기화
+  useEffect(() => {
+    if (keywordFromLayout) {
+      setSearchTerm(keywordFromLayout);
+    }
+  }, [keywordFromLayout]);
 
   const currentUserId = localStorage.getItem("userId") || "guest";
   const storageKey = `wishlist_${currentUserId}`;

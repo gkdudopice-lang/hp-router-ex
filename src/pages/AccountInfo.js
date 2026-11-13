@@ -23,7 +23,7 @@ const AccountInfo = () => {
     const fetchUserData = async () => {
       try {
         // JWt 토큰을 이용해 내 회원 정보 조회
-        const response = await AxiosApi.getMypage();
+        const response = await AxiosApi.accountInfo();
 
         // 3. DB에서 받은 회원 정보 저장
         setUserInfo({

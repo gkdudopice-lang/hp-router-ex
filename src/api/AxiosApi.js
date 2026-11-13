@@ -32,8 +32,7 @@ const AxiosApi = {
   },
 
   // 마이페이지 회원정보 조회
-  getMypage: () => AxiosInstance.get("/auth/mypage"),
-
+  accountInfo: () => AxiosInstance.get("/auth/mypage"),
   // 게시판 관련
   boardWrite: async (title, content, email) =>
     AxiosInstance.post("/board/write", {
@@ -81,6 +80,19 @@ const AxiosApi = {
 
   // 💡 [추가] 전체 콘서트 목록 조회 (AllConcertMenu.js 에러 해결용)
   getAllConcerts: async () => AxiosInstance.get("/concerts"),
+
+  //채팅방 생성
+  chatCreate: async (name) => {
+    return await AxiosInstance.post("/chat/new", { name });
+  },
+  //채팅방 목록
+  chatList: async () => {
+    return await AxiosInstance.get("/chat/list");
+  },
+  // 채팅방 정보
+  chatRoom: async (roomId) => {
+    return await AxiosInstance.get(`/chat/room/${roomId}`);
+  },
 };
 
 export default AxiosApi;

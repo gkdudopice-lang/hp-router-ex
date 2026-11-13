@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import AxiosApi from "../api/AxiosApi";
 import Button from "../Components/common/Button";
 import BottomBar from "../Components/common/BottomBar";
+import AxiosApi from "../api/AxiosApi";
 
 /* ───────── 스타일 컴포넌트 ───────── */
 const Container = styled.div`
@@ -20,7 +20,7 @@ const Container = styled.div`
 /* 1. 표지(이미지) 영역 */
 const PosterBox = styled.div`
   width: 100%;
-  height: 380px;
+  height: 400px;
   background-color: #e2e8f0;
   border-radius: 16px;
   display: flex;
@@ -30,6 +30,12 @@ const PosterBox = styled.div`
   font-size: 18px;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 `;
 
 /* 2. 상단 스크롤 탭 메뉴 (sticky로 고정) */
@@ -98,25 +104,20 @@ const SectionBox = styled.div`
 const ReservationDetail = () => {
   const { id } = useParams(); // URL에서 상품 번호(id) 가져오기
   const navigate = useNavigate();
+  const [concert, setConcert] = useState(null);
 
-  // 1. 백엔드에서 받아온 상품 정보를 담을 상태 (초기값 null)
-  const [product, setProduct] = useState(null);
-
-  // 2. 페이지가 처음 열릴 때(또는 id가 바뀔 때) 백엔드에서 데이터 가져오기
   useEffect(() => {
-    const fetchProductDetail = async () => {
+    const loadConcert = async () => {
       try {
-        // 백엔드 API 호출 (함수명은 실제 만드신 AxiosApi 규격에 맞게 조정하세요)
         const response = await AxiosApi.getConcertDetail(id);
-        setProduct(response.data); // 받아온 콘서트/상품 객체 데이터 저장
+        setConcert(response.data);
+        console.log("공연정보:", response.data);
       } catch (error) {
-        console.error("상품 상세 정보를 불러오는 중 오류 발생:", error);
+        console.error("공연 조회 실패:", error);
       }
     };
-
-    fetchProductDetail();
+    loadConcert();
   }, [id]);
-
   // 각 섹션으로 스크롤 이동을 위한 useRef 선언
   const sectionRefs = {
     notice: useRef(null),
@@ -136,25 +137,29 @@ const ReservationDetail = () => {
     });
   };
 
-  // 하단 예매하기 버튼 클릭 시 -> 날짜 및 회차 선택 페이지로 이동 (추후 라우트 연결)
+  // 하단 예매하기 버튼 클릭
   const handleBookingClick = () => {
+    // 로그인 여부 확인
+    const isLogin = localStorage.getItem("isLogin");
+
+    if (isLogin !== "TRUE") {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+
+    // 로그인한 경우 예매 페이지로 이동
     navigate(`/reservation/select/${id}`);
   };
 
-  // 데이터를 아직 불러오는 중일 때의 처리 (로딩 바나 문구)
-  if (!product) {
-    return (
-      <Container>
-        <p>상품 정보를 불러오는 중입니다...</p>
-      </Container>
-    );
-  }
-
   return (
     <Container>
-      {/* 1. 표지 이미지 */}
-      <PosterBox>표지 (이미지 영역) - 상품 {id || "1"}</PosterBox>
-
+      <PosterBox>
+        {/* 1. 표지 이미지 */}
+        {concert?.posterUrl && (
+          <img src={concert.posterUrl} alt={concert.title} />
+        )}
+      </PosterBox>
       {/* 2. 상단 탭 네비게이션 */}
       <TabNav>
         <TabButton onClick={() => scrollToSection("notice")}>
@@ -176,50 +181,37 @@ const ReservationDetail = () => {
       {/* 3. 각 상세 정보 섹션들 */}
       <SectionBox ref={sectionRefs.notice}>
         <h2>공지사항</h2>
-        <p>{product.content || "등록된 공지사항이 없습니다."}</p>
+        <p>{concert?.notice}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.casting}>
         <h2>캐스팅</h2>
-        <p>콘서트명: {product.title}</p>
+        <p>{concert?.casting}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.detail}>
         <h2>상품상세</h2>
-        <p>{product.content}</p>
+        <p>{concert?.detail}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.price}>
         <h2>가격 및 할인 정보</h2>
-        <p>
-          기본 가격:{" "}
-          {product.price
-            ? product.price.toLocaleString() + "원"
-            : "가격 정보 없음"}
-        </p>
+        <p>{concert?.priceInfo}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.guide}>
         <h2>이용안내</h2>
-        <p>
-          상품 ID: {product.id} / {product.title} 이용 안내입니다.
-        </p>
+        <p>{concert?.guide}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.refund}>
         <h2>취소 및 환불 규정</h2>
-        <p>
-          예매 후 7일 이내 취소 시 취소수수료가 면제되며, 관람일 전일까지 환불
-          신청이 가능합니다.
-        </p>
+        <p>{concert?.refund}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.location}>
         <h2>장소 오시는 길</h2>
-        <p>
-          공연장 위치: 서울시 예술의전당 오페라극장 (주차장이 혼잡하오니
-          대중교통을 이용해 주세요.)
-        </p>
+        <p>{concert?.location}</p>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.review}>
