@@ -71,7 +71,8 @@ const KAKAO_AUTH_URL =
   "https://kauth.kakao.com/oauth/authorize?response_type=code" +
   `&client_id=${process.env.REACT_APP_KAKAO_CLIENT_ID}` +
   "&redirect_uri=" +
-  encodeURIComponent(process.env.REACT_APP_KAKAO_REDIRECT_URI);
+  encodeURIComponent(process.env.REACT_APP_KAKAO_REDIRECT_URI) +
+  "&prompt=login";
 
 const Login = () => {
   const [inputId, setInputId] = useState("");
