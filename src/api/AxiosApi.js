@@ -95,7 +95,7 @@ const AxiosApi = {
   },
   // 카카오 로그인
   kakaoLogin: async (code) => {
-    return await AxiosInstance.post("/oauth/kakao", { code });
+    return await AxiosInstance.post("/auth/kakao", { code });
   },
 };
 
