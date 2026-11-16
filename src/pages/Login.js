@@ -89,7 +89,6 @@ const Login = () => {
 
     try {
       const response = await AxiosApi.memberLogin(inputId, inputPwd);
-      console.log(response.data);
 
       if (response.data) {
         // JWT 저장 및 자동 재발급 예약
