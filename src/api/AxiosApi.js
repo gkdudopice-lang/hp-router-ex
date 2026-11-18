@@ -53,13 +53,20 @@ const AxiosApi = {
   // 예매 상세 조회
   getReservation: async (reservationId) =>
     AxiosInstance.get(`/reservations/${reservationId}`),
+  // 로그인한 회원의 예매 내역 조회
+  getMyReservations: async () => AxiosInstance.get("/reservations/my"),
 
-  // 공연 회차 관련
+  // 전체 공연 회차 조회
   getSchedules: async (concertId) =>
     AxiosInstance.get(`/concerts/${concertId}/schedules`),
-  //공연 회차 등록
+  // 기존 단일 회차 등록
   createSchedule: async (concertId, scheduleData) =>
     AxiosInstance.post(`/concerts/${concertId}/schedules`, scheduleData),
+  // 선택한 날짜의 3개 회차 조회 또는 생성
+  getOrCreateSchedulesByDate: async (concertId, concertDate) =>
+    AxiosInstance.post(`/concerts/${concertId}/schedules/by-date`, {
+      concertDate,
+    }),
 
   // 좌석 관련
   createSeats: async (scheduleId, seatNumbers) =>

@@ -93,6 +93,9 @@ const SectionBox = styled.div`
     padding-bottom: 10px;
     margin-bottom: 6px;
   }
+  h4 {
+    font-size: 14px;
+  }
 
   p {
     font-size: 14px;
@@ -154,6 +157,7 @@ const ReservationDetail = () => {
 
   return (
     <Container>
+      <h1>{concert?.title}</h1>
       <PosterBox>
         {/* 1. 표지 이미지 */}
         {concert?.posterUrl && (
@@ -191,7 +195,40 @@ const ReservationDetail = () => {
 
       <SectionBox ref={sectionRefs.detail}>
         <h2>상품상세</h2>
-        <p>{concert?.detail}</p>
+
+        {/* 1. 공연 기본 설명 */}
+        <div className="detail-group">
+          <h4>공연 소개</h4>
+          <p>{concert?.detail}</p>
+        </div>
+
+        {/* 2. 줄거리 / 시놉시스 */}
+        <div className="detail-group" style={{ marginTop: "20px" }}>
+          <h4>시놉시스 및 줄거리</h4>
+          <p>{concert?.story}</p>
+        </div>
+
+        {/* 3. 분위기 및 키워드 (태그 형태로 출력) */}
+        <div className="detail-group" style={{ marginTop: "20px" }}>
+          <h4>관람 포인트 & 분위기</h4>
+          <div
+            className="mood-tags"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginTop: "8px",
+            }}
+          >
+            {concert?.mood ? (
+              concert.mood
+                .split(",")
+                .map((tag, index) => <span key={index}>#{tag.trim()}</span>)
+            ) : (
+              <p>키워드 정보가 없습니다.</p>
+            )}
+          </div>
+        </div>
       </SectionBox>
 
       <SectionBox ref={sectionRefs.price}>

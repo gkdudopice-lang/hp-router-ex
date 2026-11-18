@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import CustomCalendar from "../Components/common/CustomCalendar";
@@ -95,54 +95,31 @@ const ReservationSelect = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
+  const [scheduleError, setScheduleError] = useState("");
 
-  // 회차 조회 및 날짜별 최대 2개 제한
+  // 날짜를 빠르게 바꿔 선택했을 때 이전 요청 결과가 덮어쓰지 않도록 관리
+  const requestIdRef = useRef(0);
 
-  const loadSchedules = async () => {
+  // 선택한 날짜의 회차 3개 조회 또는 생성
+  const loadSchedules = async (dateString) => {
+    const currentRequestId = ++requestIdRef.current;
+
     try {
-      // 1. DB에 저장된 전체 회차 조회
-      const response = await AxiosApi.getSchedules(id);
+      setIsLoadingSchedules(true);
+      setScheduleError("");
 
-      console.log("DB에서 가져온 전체 회차:", response.data);
-
-      console.log(
-        "2026-11-05 회차:",
-        response.data.filter((session) => session.concertDate === "2026-11-05"),
+      // 선택한 날짜를 백엔드에 전달
+      const response = await AxiosApi.getOrCreateSchedulesByDate(
+        id,
+        dateString,
       );
 
-      console.log("전체 회차 응답:", response.data);
+      console.log("선택 날짜의 회차 응답:", response.data);
 
-      // 2. 날짜와 시간순 정렬
-      const sortedSchedules = [...response.data].sort((a, b) => {
-        const dateA = `${a.concertDate} ${a.concertTime}`;
-        const dateB = `${b.concertDate} ${b.concertTime}`;
-
-        return dateA.localeCompare(dateB);
-      });
-
-      // 3. 날짜별 최대 2개 회차
-      const dateCount = {};
-
-      const filteredSchedules = sortedSchedules.filter((session) => {
-        const date = session.concertDate;
-
-        if (!dateCount[date]) {
-          dateCount[date] = 0;
-        }
-
-        if (dateCount[date] >= 2) {
-          return false;
-        }
-
-        dateCount[date]++;
-        return true;
-      });
-
-      console.log("날짜별 필터링 결과:", filteredSchedules);
-
-      // 4. 회차별 잔여좌석 조회
+      // 회차별 잔여 좌석 조회
       const updatedSessions = await Promise.all(
-        filteredSchedules.map(async (session) => {
+        response.data.map(async (session) => {
           const scheduleId = session.scheduleId ?? session.id;
 
           let remaining = 0;
@@ -151,50 +128,56 @@ const ReservationSelect = () => {
             const seatResponse = await AxiosApi.getRemainingSeats(scheduleId);
 
             console.log(
-              `${scheduleId}번 회차 잔여좌석 응답:`,
+              `${scheduleId}번 회차 잔여 좌석 응답:`,
               seatResponse.data,
             );
 
             remaining =
               typeof seatResponse.data === "number"
                 ? seatResponse.data
-                : seatResponse.data.remainingSeats;
+                : (seatResponse.data.remainingSeats ?? 0);
           } catch (error) {
-            console.error(`${scheduleId}번 회차 잔여좌석 조회 실패:`, error);
+            console.error(`${scheduleId}번 회차 잔여 좌석 조회 실패:`, error);
           }
+
+          const concertTime = String(session.concertTime);
 
           return {
             id: scheduleId,
             scheduleId: scheduleId,
             date: session.concertDate,
-            time: session.concertTime.slice(0, 5),
-            seats: remaining ?? 0,
-            casting: session.concertTime.startsWith("14:00")
-              ? "최재림, 이해원, 송원근"
-              : "최재림, 이해원, 송원근, 에블린",
+            time: concertTime.slice(0, 5),
+            seats: remaining,
           };
         }),
       );
 
-      console.log("최종 회차 목록:", updatedSessions);
-
-      setSessionList(updatedSessions);
+      // 가장 최근에 선택한 날짜의 요청 결과만 반영
+      if (currentRequestId === requestIdRef.current) {
+        console.log("최종 회차 목록:", updatedSessions);
+        setSessionList(updatedSessions);
+      }
     } catch (error) {
-      console.error("회차 조회 실패:", error);
+      console.error("회차 조회 또는 생성 실패:", error);
+
+      if (currentRequestId === requestIdRef.current) {
+        setSessionList([]);
+        setScheduleError(
+          "회차를 불러오지 못했습니다. 다시 날짜를 선택해 주세요.",
+        );
+      }
+    } finally {
+      if (currentRequestId === requestIdRef.current) {
+        setIsLoadingSchedules(false);
+      }
     }
   };
-
-  // 페이지 진입 시 회차 조회
-  useEffect(() => {
-    loadSchedules();
-  }, [id]);
 
   // 공연 시작 30분 전 예매 마감
   const isSessionPassed = (dateString, timeString) => {
     const now = new Date();
 
     const [year, month, day] = dateString.split("-").map(Number);
-
     const [hours, minutes] = timeString.split(":").map(Number);
 
     const sessionTime = new Date(year, month - 1, day, hours, minutes, 0);
@@ -208,6 +191,10 @@ const ReservationSelect = () => {
   const handleDateSelect = (dateString) => {
     setSelectedDate(dateString);
     setSelectedSessionId(null);
+    setSessionList([]);
+
+    // 날짜를 선택한 시점에만 해당 날짜의 회차 요청
+    loadSchedules(dateString);
   };
 
   // 회차 선택
@@ -263,8 +250,12 @@ const ReservationSelect = () => {
         <SessionSection>
           <SectionTitle>{selectedDate} 회차 선택</SectionTitle>
 
-          {filteredSessions.length === 0 ? (
-            <p>선택한 날짜에는 등록된 회차가 없습니다.</p>
+          {isLoadingSchedules ? (
+            <p>회차와 좌석 정보를 불러오는 중입니다...</p>
+          ) : scheduleError ? (
+            <p>{scheduleError}</p>
+          ) : filteredSessions.length === 0 ? (
+            <p>선택한 날짜의 회차가 없습니다.</p>
           ) : (
             filteredSessions.map((session) => {
               const isPassed = isSessionPassed(session.date, session.time);
@@ -310,7 +301,11 @@ const ReservationSelect = () => {
       <BottomBar>
         <div>
           <Button
-            enabled={Boolean(selectedDate && selectedSessionId) && !isSaving}
+            enabled={
+              Boolean(selectedDate && selectedSessionId) &&
+              !isSaving &&
+              !isLoadingSchedules
+            }
             onClick={handleNextStep}
           >
             예매하기
