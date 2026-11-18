@@ -259,15 +259,41 @@ export default function ReservationHistory() {
   }, []);
 
   // 예약 취소 버튼 클릭 시
-  const handleCancelReservation = (targetId) => {
-    if (window.confirm("정말 예약을 취소하시겠습니까?")) {
-      // 해당 아이템의 status를 '취소/환불'로 변경 (DB 연동 시 삭제 혹은 상태 변경 API 호출)
-      setReservations(
-        reservations.map((item) =>
-          item.id === targetId ? { ...item, status: "취소/환불" } : item,
-        ),
-      );
+  const handleCancelReservation = async (targetId) => {
+    if (!window.confirm("정말 예약을 취소하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      // 1. 실제 DB 예매 취소 API 호출
+      await AxiosApi.cancelReservation(targetId);
+
+      // 2. 취소된 최신 예매 내역 다시 조회
+      const response = await AxiosApi.getMyReservations();
+
+      const mappedReservations = response.data
+        .filter((item) => item.status === "PAID" || item.status === "CANCELLED")
+        .map((item) => ({
+          id: item.reservationId,
+          date: item.reservedAt?.split("T")[0],
+          title: item.concertTitle,
+          location: item.location,
+          schedule: `${item.concertDate} ( ${item.concertTime?.slice(0, 5)} )`,
+          seats: `${item.seats.join(", ")}`,
+          price: `${item.price.toLocaleString()}원`,
+          status: item.status === "PAID" ? "이용 예정" : "취소/환불",
+          posterUrl: item.posterUrl,
+          scheduleId: item.scheduleId,
+          productId: item.concertId,
+        }));
+
+      // 3. 화면 갱신
+      setReservations(mappedReservations);
+
       alert("예약이 취소되어 취소/환불 내역으로 이동되었습니다.");
+    } catch (error) {
+      console.error("예매 취소 실패:", error);
+      alert(error.response?.data?.message || "예매 취소에 실패했습니다.");
     }
   };
 

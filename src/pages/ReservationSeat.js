@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../Components/common/Button";
@@ -58,7 +58,6 @@ const SeatRow = styled.div`
   justify-content: center;
 `;
 
-/* 개별 좌석 버튼 스타일 */
 const SeatButton = styled.button`
   width: 50px;
   height: 45px;
@@ -66,21 +65,31 @@ const SeatButton = styled.button`
   font-size: 13px;
   font-weight: 600;
   border: none;
-  cursor: ${({ $isReserved }) => ($isReserved ? "not-allowed" : "pointer")};
+  cursor: ${({ $status, $isSelected }) =>
+    $status !== "AVAILABLE" || $isSelected ? "not-allowed" : "pointer"};
   transition: all 0.2s ease-in-out;
 
-  /* 1. 예매 완료된 좌석 (진한 회색) */
-  ${({ $isReserved }) =>
-    $isReserved &&
+  /* 1. 임시 선점 좌석: 연노랑 */
+  ${({ $status }) =>
+    $status === "HELD" &&
+    `
+      background-color: #fff2b2;
+      color: #927000;
+      box-shadow: none;
+    `}
+
+  /* 2. 예매 완료 좌석: 회색 */
+  ${({ $status }) =>
+    $status === "RESERVED" &&
     `
       background-color: #cbd5e1;
       color: #64748b;
       box-shadow: none;
     `}
 
-  /* 2. 내가 선택한 좌석 */
-  ${({ $isSelected, $isReserved }) =>
-    !$isReserved &&
+  /* 3. 내가 선택한 좌석: 보라색 */
+  ${({ $status, $isSelected }) =>
+    $status === "AVAILABLE" &&
     $isSelected &&
     `
       background-color: purple;
@@ -89,9 +98,9 @@ const SeatButton = styled.button`
       transform: translateY(-2px);
     `}
 
-  /* 3. 선택 가능한 좌석 (화이트 + 입체 그림자 + 호버 시 보라색 테두리) */
-  ${({ $isSelected, $isReserved }) =>
-    !$isReserved &&
+  /* 4. 선택 가능한 좌석: 흰색 */
+  ${({ $status, $isSelected }) =>
+    $status === "AVAILABLE" &&
     !$isSelected &&
     `
       background-color: #ffffff;
@@ -158,43 +167,40 @@ const ReservationSeat = () => {
   // 앞 페이지에서 넘어온 날짜와 회차 정보
   const { date, sessionId } = location.state || {};
 
-  // 30개의 좌석 데이터 (A~E열, 각 6석)
-  const [seats, setSeats] = useState([
-    { id: "A1", name: "A1", isReserved: false },
-    { id: "A2", name: "A2", isReserved: true }, // 예매 완료 예시
-    { id: "A3", name: "A3", isReserved: false },
-    { id: "A4", name: "A4", isReserved: false },
-    { id: "A5", name: "A5", isReserved: false },
-    { id: "A6", name: "A6", isReserved: false },
+  // 좌석 배열 선언
+  const [seats, setSeats] = useState([]);
 
-    { id: "B1", name: "B1", isReserved: false },
-    { id: "B2", name: "B2", isReserved: false },
-    { id: "B3", name: "B3", isReserved: true }, // 예매 완료 예시
-    { id: "B4", name: "B4", isReserved: false },
-    { id: "B5", name: "B5", isReserved: false },
-    { id: "B6", name: "B6", isReserved: false },
+  // DB에서 해당 회차의 좌석 목록 조회
+  useEffect(() => {
+    const fetchSeats = async () => {
+      try {
+        const scheduleId = sessionId ?? id;
 
-    { id: "C1", name: "C1", isReserved: false },
-    { id: "C2", name: "C2", isReserved: false },
-    { id: "C3", name: "C3", isReserved: false },
-    { id: "C4", name: "C4", isReserved: false },
-    { id: "C5", name: "C5", isReserved: false },
-    { id: "C6", name: "C6", isReserved: false },
+        const response = await AxiosApi.getSeats(scheduleId);
 
-    { id: "D1", name: "D1", isReserved: false },
-    { id: "D2", name: "D2", isReserved: false },
-    { id: "D3", name: "D3", isReserved: false },
-    { id: "D4", name: "D4", isReserved: false },
-    { id: "D5", name: "D5", isReserved: false },
-    { id: "D6", name: "D6", isReserved: false },
+        console.log("DB 좌석 목록:", response.data);
 
-    { id: "E1", name: "E1", isReserved: false },
-    { id: "E2", name: "E2", isReserved: false },
-    { id: "E3", name: "E3", isReserved: false },
-    { id: "E4", name: "E4", isReserved: false },
-    { id: "E5", name: "E5", isReserved: false },
-    { id: "E6", name: "E6", isReserved: false },
-  ]);
+        const mappedSeats = response.data.map((item) => {
+          const status = item.status;
+          const seatNumber = item.seatNumber ?? item.SeatNumber;
+
+          return {
+            id: item.id,
+            name: seatNumber,
+            status: status,
+            isReserved: status !== "AVAILABLE",
+          };
+        });
+
+        setSeats(mappedSeats);
+      } catch (error) {
+        console.error("좌석 목록 조회 실패:", error);
+        alert("좌석 정보를 불러오지 못했습니다.");
+      }
+    };
+
+    fetchSeats();
+  }, [sessionId, id]);
 
   // 선택한 좌석 번호들을 담을 배열
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -203,27 +209,13 @@ const ReservationSeat = () => {
   const [loading, setLoading] = useState(false);
   // 좌석 클릭 이벤트
   const handleSeatClick = (seat) => {
-    if (seat.isReserved) return; // 팔린 좌석은 클릭 방지
+    if (seat.status !== "AVAILABLE") return;
 
     if (selectedSeats.includes(seat.name)) {
       setSelectedSeats(selectedSeats.filter((item) => item !== seat.name));
     } else {
       setSelectedSeats([...selectedSeats, seat.name]);
     }
-  };
-
-  const handleClose = () => {
-    navigate(-1);
-  };
-
-  // 예매하기 버튼 클릭 시 (백엔드로 보낼 데이터 정리)
-
-  const bookingData = {
-    productId: id,
-    date: date,
-    sessionId: sessionId,
-    seats: selectedSeats,
-    bookingTime: new Date().toISOString(), // 예매 시간
   };
   // 예매하기 버튼
   const handleBooking = async () => {
@@ -280,7 +272,7 @@ const ReservationSeat = () => {
               return (
                 <SeatButton
                   key={seat.id}
-                  $isReserved={seat.isReserved}
+                  $status={seat.status}
                   $isSelected={isSelected}
                   onClick={() => handleSeatClick(seat)}
                 >
@@ -300,6 +292,9 @@ const ReservationSeat = () => {
           </div>
           <div>
             <LegendColor color="#cbd5e1" /> 예매 완료
+          </div>
+          <div>
+            <LegendColor color="#fff2b2" /> 임시 선점
           </div>
         </LegendBox>
       </SeatContainer>

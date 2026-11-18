@@ -55,6 +55,9 @@ const AxiosApi = {
     AxiosInstance.get(`/reservations/${reservationId}`),
   // 로그인한 회원의 예매 내역 조회
   getMyReservations: async () => AxiosInstance.get("/reservations/my"),
+  // 예매 취소
+  cancelReservation: async (reservationId) =>
+    AxiosInstance.patch(`/reservations/${reservationId}/cancel`),
 
   // 전체 공연 회차 조회
   getSchedules: async (concertId) =>
