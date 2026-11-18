@@ -42,8 +42,12 @@ const ViewAllLink = styled(Link)`
 
 const TopSection = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
+  align-items: stretch;
+  & > * {
+    min-width: 0;
+  }
 `;
 
 const ProductCard = styled.div`

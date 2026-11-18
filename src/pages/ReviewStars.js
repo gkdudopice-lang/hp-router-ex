@@ -57,6 +57,7 @@ export default function ReviewStars() {
               onClick={() => starScore(index)}
               src={clicked[index] ? yellowStar : Star}
               alt={`${index + 1}점`}
+              draggable="false"
             />
           ))}
         </StarsWrap>

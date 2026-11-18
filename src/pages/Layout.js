@@ -6,6 +6,7 @@ import Input from "../Components/common/Input"; // 공통 인풋 컴포넌트
 import logoImg from "../img/사이트 로고.png";
 import AxiosInstance from "../api/AxiosInstance"; // 토큰 자동 처리 Axios 인스턴스
 import { clearAuth } from "../api/AxiosInstance"; // 토큰 삭제 및 자동 재발급 예약 해제
+import AxiosApi from "../api/AxiosApi"; // 일반 Axios 인스턴스 (토큰 자동 처리 X)
 
 const Container = styled.div`
   min-height: 100vh;
@@ -135,24 +136,49 @@ export default function Layout() {
 
   // 2. 컴포넌트 마운트 시 로컬스토리지 확인
   useEffect(() => {
-    const isLogin = localStorage.getItem("isLogin");
-    const savedUserId =
-      localStorage.getItem("userId") || localStorage.getItem("email");
+    const checkLogin = async () => {
+      //브라우저 세션 확인용 표시
+      const browserSession = sessionStorage.getItem("ticketpassBrowserSession");
+      // 새로운 브라우저 세션이면 기존 토큰 삭제
+      if (!browserSession) {
+        clearAuth();
+        sessionStorage.setItem("ticketpassBrowserSession", "TRUE");
 
-    if (isLogin === "TRUE" && savedUserId) {
-      setIsLogIn(true);
-      setUserId(savedUserId);
-    } else {
-      setIsLogIn(false);
-      setUserId("");
-    }
+        setIsLogIn(false);
+        setUserId("");
+        return;
+      }
+
+      // Access Token 이 없으면 로그아웃 상태
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        setIsLogIn(false);
+        setUserId("");
+        return;
+      }
+
+      //JWT 로 실제 로그인 회원 정보 확인
+      try {
+        const response = await AxiosInstance.get("/auth/mypage");
+
+        setIsLogIn(true);
+        setUserId(response.data.userId);
+      } catch (error) {
+        console.error(" 로그인 상태 확인 실패:", error);
+
+        clearAuth();
+        setIsLogIn(false);
+        setUserId("");
+      }
+    };
+    checkLogin();
   }, []);
 
   // 3. 로그아웃 처리 함수 (백엔드 연동)
   const handleLogout = async () => {
     try {
-      // 👉 백엔드의 로그아웃 API 호출 (AxiosInstance가 알아서 accessToken을 헤더에 담아줍니다)
-      await AxiosInstance.post("/auth/logout");
+      await AxiosApi.memberLogout();
     } catch (error) {
       console.error("서버 로그아웃 통신 중 에러 발생:", error);
     } finally {
@@ -186,7 +212,7 @@ export default function Layout() {
       {/* 공통 헤더 영역 */}
       <Header>
         <Logo onClick={() => navigate("/")}>
-          <img src={logoImg} alt="로고" />
+          <img src={logoImg} alt="로고" draggable="false" />
         </Logo>
 
         <SearchBox>
