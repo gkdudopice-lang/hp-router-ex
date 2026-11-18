@@ -91,7 +91,7 @@ const CardHeader = styled.div`
 
 const CardBody = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 20px;
   align-items: center;
 
   .thumbnail {
@@ -231,7 +231,25 @@ export default function ReservationHistory() {
 
         console.log("내 예매 내역:", response.data);
 
-        setReservations(response.data);
+        const mappedReservations = response.data
+          .filter(
+            (item) => item.status === "PAID" || item.status === "CANCELLED",
+          )
+          .map((item) => ({
+            id: item.reservationId,
+            date: item.reservedAt?.split("T")[0],
+            title: item.concertTitle,
+            location: item.location,
+            schedule: `${item.concertDate} ( ${item.concertTime?.slice(0, 5)} )`,
+            seats: `${item.seats.join(", ")}`,
+            price: `${item.price.toLocaleString()}원`,
+            status: item.status === "PAID" ? "이용 예정" : "취소/환불",
+            posterUrl: item.posterUrl,
+            scheduleId: item.scheduleId,
+            productId: item.concertId,
+          }));
+
+        setReservations(mappedReservations);
       } catch (error) {
         console.error("예매 내역 조회 실패:", error);
       }
@@ -323,7 +341,22 @@ export default function ReservationHistory() {
             </CardHeader>
 
             <CardBody>
-              <div className="thumbnail">상품 이미지</div>
+              <div className="thumbnail">
+                {item.posterUrl ? (
+                  <img
+                    src={item.posterUrl}
+                    alt={item.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "6px",
+                    }}
+                  />
+                ) : (
+                  "상품 이미지"
+                )}
+              </div>
               <div className="info">
                 <h3>{item.title}</h3>
                 <p>📍 {item.location}</p>
@@ -335,7 +368,7 @@ export default function ReservationHistory() {
                 📅 일시: <strong>{item.schedule}</strong>
               </div>
               <div>
-                💺 내역: <strong>{item.seats}</strong>
+                💺 선택 좌석: <strong>{item.seats}</strong>
               </div>
               <div>
                 💳 결제금액: <strong>{item.price}</strong>

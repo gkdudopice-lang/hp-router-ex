@@ -93,18 +93,15 @@ const ReservationPayment = () => {
   const navigate = useNavigate();
 
   // 이전 페이지(좌석 선택)에서 전달받은 데이터
-  const { date, sessionId, seats, reservation } = location.state || {
-    date: "2026-10-25",
-    sessionId: 1,
-    seats: ["A1", "A2"], // 테스트용 기본값
-  };
+  const { reservation } = location.state || {};
+
+  const date = reservation?.concertDate;
+  const concertTime = reservation?.concertTime?.slice(0, 5);
+  const seats = reservation?.seats || [];
+  const totalAmount = reservation?.price || 0;
 
   // 선택한 결제 수단 상태 ("card": 신용카드, "transfer": 계좌이체 등)
   const [paymentMethod, setPaymentMethod] = useState("card");
-
-  // 좌석당 가격 계산 (예시: 1석당 50,000원)
-  const pricePerSeat = 50000;
-  const totalAmount = seats ? seats.length * pricePerSeat : 0;
 
   // 결제 완료 버튼 클릭 시
   // 결제하기 버튼 클릭
@@ -146,6 +143,7 @@ const ReservationPayment = () => {
       const finalBookingData = {
         reservationId: response.data.reservationId,
         scheduleId: response.data.scheduleId,
+        productId: reservation.concertId,
         date: date,
         seats: seats,
         totalAmount: totalAmount,
@@ -180,12 +178,12 @@ const ReservationPayment = () => {
         <h3>예매 정보 확인</h3>
         <InfoRow>
           <span>상품 번호</span>
-          <span>상품 {id || "1"}</span>
+          <span>상품 {reservation?.concertId ?? "-"}</span>
         </InfoRow>
         <InfoRow>
           <span>관람 일시</span>
           <span>
-            {date} ({sessionId === 1 ? "14:00" : "19:30"})
+            {date} ( {concertTime} )
           </span>
         </InfoRow>
         <InfoRow>
