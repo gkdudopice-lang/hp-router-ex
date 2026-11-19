@@ -211,6 +211,30 @@ const ModalContent = styled.div`
 
 /* ───────── 메인 컴포넌트 ───────── */
 export default function ReservationHistory() {
+  // 공연 날짜와 시간에 따라 예매 상태 판별
+  const getReservationStatus = (item) => {
+    if (item.status === "CANCELLED") {
+      return "취소/환불";
+    }
+
+    if (item.status === "PAID") {
+      const concertDateTime = new Date(
+        `${item.concertDate}T${item.concertTime}`,
+      );
+
+      if (
+        !Number.isNaN(concertDateTime.getTime()) &&
+        concertDateTime.getTime() < Date.now()
+      ) {
+        return "이용 완료";
+      }
+
+      return "이용 예정";
+    }
+
+    return "";
+  };
+
   const navigate = useNavigate();
 
   // 탭 상태 ("all", "upcoming", "completed", "cancelled")
@@ -243,7 +267,7 @@ export default function ReservationHistory() {
             schedule: `${item.concertDate} ( ${item.concertTime?.slice(0, 5)} )`,
             seats: `${item.seats.join(", ")}`,
             price: `${item.price.toLocaleString()}원`,
-            status: item.status === "PAID" ? "이용 예정" : "취소/환불",
+            status: getReservationStatus(item),
             posterUrl: item.posterUrl,
             scheduleId: item.scheduleId,
             productId: item.concertId,
@@ -281,7 +305,7 @@ export default function ReservationHistory() {
           schedule: `${item.concertDate} ( ${item.concertTime?.slice(0, 5)} )`,
           seats: `${item.seats.join(", ")}`,
           price: `${item.price.toLocaleString()}원`,
-          status: item.status === "PAID" ? "이용 예정" : "취소/환불",
+          status: getReservationStatus(item),
           posterUrl: item.posterUrl,
           scheduleId: item.scheduleId,
           productId: item.concertId,

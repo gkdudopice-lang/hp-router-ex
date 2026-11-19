@@ -103,6 +103,30 @@ const AxiosApi = {
   chatRoom: async (roomId) => {
     return await AxiosInstance.get(`/chat/room/${roomId}`);
   },
+  // 리뷰 등록
+  createReview: async (reservationId, rating, content) => {
+    return await AxiosInstance.post(`/reviews/${reservationId}`, {
+      rating,
+      content,
+    });
+  },
+  // 내가 작성한 리뷰 조회
+  getMyReviews: async () => {
+    return await AxiosInstance.get("/reviews/my");
+  },
+  // 리뷰 수정
+  updateReview: async (reviewId, rating, content) => {
+    return await AxiosInstance.put(`/reviews/${reviewId}`, {
+      rating,
+      content,
+    });
+  },
+
+  // 리뷰 삭제
+  deleteReview: async (reviewId) => {
+    return await AxiosInstance.delete(`/reviews/${reviewId}`);
+  },
+
   // 카카오 로그인
   kakaoLogin: async (code) => {
     return await AxiosInstance.post("/auth/kakao", { code });

@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../Components/common/Button"; // 💡 공통 버튼 컴포넌트 재사용
 import Star from "../img/star.png";
 import yellowStar from "../img/yellostar.png";
 import BackButton from "../Components/common/BackButton";
+import AxiosApi from "../api/AxiosApi";
 
 export default function ReviewStars() {
   const { id } = useParams(); // 어떤 상품에 대한 리뷰인지 상품 번호 받기
   const navigate = useNavigate();
+  const location = useLocation();
+  const productTitle = location.state?.productTitle || "상품";
 
   const [clicked, setClicked] = useState([false, false, false, false, false]);
   const [content, setContent] = useState("");
@@ -20,7 +23,7 @@ export default function ReviewStars() {
     setClicked(clicked.map((_, i) => i <= index));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (clickedStarNum === 0) {
       alert("별점을 선택해 주세요.");
       return;
@@ -31,11 +34,24 @@ export default function ReviewStars() {
       return;
     }
 
-    // 나중에 백엔드 API와 연결할 자리
-    alert(`상품 ${id}번의 리뷰가 등록되었습니다! (임시)`);
-    navigate("/mypage/reviews"); // 등록 후 이전 페이지로 이동
-  };
+    try {
+      await AxiosApi.createReview(id, clickedStarNum, content);
+      alert("리뷰가 성공적으로 등록되었습니다!");
+      navigate("/mypage/reviews");
+    } catch (error) {
+      const status = error.response?.status;
+      const message = error.response?.data?.message;
 
+      if (status === 409) {
+        alert("이미 작성하신 리뷰입니다.");
+        navigate("/mypage/reviews");
+        return;
+      }
+
+      console.error("리뷰 등록 실패:", error);
+      alert(message || "리뷰 등록에 실패했습니다.");
+    }
+  };
   const handleCancel = () => {
     setClicked([false, false, false, false, false]);
     setContent("");
@@ -45,7 +61,7 @@ export default function ReviewStars() {
     <ReviewContainer>
       <HeaderRow>
         <BackButton></BackButton>
-        <Title>리뷰 작성하기 (상품 {id || "1"})</Title>
+        <Title>리뷰 작성하기 ({productTitle})</Title>
       </HeaderRow>
       <Label>별점 선택 (클릭하여 선택)</Label>
 
