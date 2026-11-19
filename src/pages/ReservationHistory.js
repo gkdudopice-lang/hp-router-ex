@@ -394,6 +394,7 @@ export default function ReservationHistory() {
               <div className="thumbnail">
                 {item.posterUrl ? (
                   <img
+                    draggable={false}
                     src={item.posterUrl}
                     alt={item.title}
                     style={{
