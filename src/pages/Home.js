@@ -125,6 +125,7 @@ const Home = () => {
   const [filteredProducts, setFilteredProducts] = useState([]); // 화면에 보여줄 상단 카드 4개
   const [selectedDate, setSelectedDate] = useState(""); // 캘린더에서 선택한 날짜
   const [selectedFilter, setSelectedFilter] = useState("인기 추천"); // 선택된 필터 키워드
+  const [shuffleKey, setShuffleKey] = useState(0);
 
   // 필터 키워드 목록
   const keywords = ["인기 추천", "신규 등록", "오픈 예정", "마감 임박"];
@@ -144,31 +145,14 @@ const Home = () => {
     fetchHomeConcerts();
   }, []);
 
-  // 2. 날짜나 필터 버튼이 바뀔 때마다 상단 4개 상품 필터링 및 정렬
+  // 2. 필터 버튼을 누를 때마다 콘서트 목록을 랜덤으로 섞어서 4개 표시
   useEffect(() => {
     if (concertList.length === 0) return;
 
-    let result = [...concertList];
+    const shuffled = [...concertList].sort(() => Math.random() - 0.5);
 
-    // 날짜가 선택된 경우 (필요에 따라 필터 로직 확장 가능)
-    if (selectedDate) {
-      console.log("선택된 날짜 필터 적용:", selectedDate);
-    }
-
-    // 필터 키워드별 분기 처리
-    if (selectedFilter === "인기 추천") {
-      result = result.sort((a, b) => b.id - a.id); // 최신 등록순 등 예시 정렬
-    } else if (selectedFilter === "신규 등록") {
-      result = result.slice().reverse(); // 역순 정렬 예시
-    } else if (selectedFilter === "마감 임박") {
-      result = result.sort((a, b) => a.price - b.price); // 가격순 정렬 예시
-    } else if (selectedFilter === "오픈 예정") {
-      result = result.slice(5, 9); // 임의의 구간 슬라이스 예시
-    }
-
-    // 상단에는 항상 4개만 노출
-    setFilteredProducts(result.slice(0, 4));
-  }, [selectedDate, selectedFilter, concertList]);
+    setFilteredProducts(shuffled.slice(0, 4));
+  }, [selectedDate, selectedFilter, concertList, shuffleKey]);
 
   const handleCardClick = (id) => {
     navigate(`/reservation/detail/${id}`);
@@ -257,7 +241,10 @@ const Home = () => {
             <KeywordButton
               key={index}
               $active={selectedFilter === keyword}
-              onClick={() => setSelectedFilter(keyword)}
+              onClick={() => {
+                setSelectedFilter(keyword);
+                setShuffleKey((prev) => prev + 1); // 필터 클릭 시 shuffleKey를 증가시켜 useEffect 트리거
+              }}
             >
               {keyword}
             </KeywordButton>
