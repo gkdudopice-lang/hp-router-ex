@@ -23,6 +23,7 @@ import PaymentRegister from "./pages/PaymentRegister";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AllConcertMenu from "./pages/AllConcertMenu";
 import KakaoCallback from "./pages/KakaoCallback";
+import NaverCallback from "./pages/NaverCallback.js";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/oauth/kakao" element={<KakaoCallback />} />
+        <Route path="/oauth/naver" element={<NaverCallback />} />
 
         {/* 2. 기본 경로("/")를 포함하여 Layout을 거치는 페이지들 (홈 화면이 먼저 뜸) */}
         <Route element={<Layout />}>

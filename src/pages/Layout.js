@@ -232,7 +232,9 @@ export default function Layout() {
           {/* 4. 로그인 상태에 따른 조건부 렌더링 */}
           {isLogIn ? (
             <>
-              <span className="user-greeting">{userId}님</span>
+              <span className="user-greeting">
+                {userId.length > 13 ? `${userId.slice(0, 13)}...` : userId}님
+              </span>
               <button onClick={handleLogout} className="logout-btn">
                 로그아웃
               </button>

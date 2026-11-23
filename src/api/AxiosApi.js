@@ -131,6 +131,13 @@ const AxiosApi = {
   kakaoLogin: async (code) => {
     return await AxiosInstance.post("/auth/kakao", { code });
   },
+  // 네이버 로그인
+  naverLogin: async (code, state) => {
+    return await AxiosInstance.post("/auth/naver", {
+      code,
+      state,
+    });
+  },
 };
 
 export default AxiosApi;
