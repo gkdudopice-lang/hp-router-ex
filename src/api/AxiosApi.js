@@ -138,6 +138,13 @@ const AxiosApi = {
       state,
     });
   },
+
+  // 구글 로그인
+  googleLogin: async (code) => {
+    return await AxiosInstance.post("/auth/google", {
+      code,
+    });
+  },
 };
 
 export default AxiosApi;

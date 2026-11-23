@@ -80,6 +80,21 @@ const NaverBtn = styled.button`
     background-color: #02b350;
   }
 `;
+const GoogleBtn = styled.button`
+  width: 100%;
+  height: 50px;
+  color: #333333;
+  background-color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border: 1px solid #dddddd;
+  border-radius: 18px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
 const SocialButtonGroup = styled.div`
   display: flex;
   gap: 12px;
@@ -118,6 +133,22 @@ const naverLogin = () => {
   });
 
   window.location.href = `${NAVER_AUTH_URL}?${params.toString()}`;
+};
+
+// 구글 로그인 주소
+const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+
+// 구글 로그인 시작
+const googleLogin = () => {
+  const params = new URLSearchParams({
+    client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+    redirect_uri: process.env.REACT_APP_GOOGLE_REDIRECT_URI,
+    response_type: "code",
+    scope: "openid email profile",
+    prompt: "select_account",
+  });
+
+  window.location.href = `${GOOGLE_AUTH_URL}?${params.toString()}`;
 };
 
 const Login = () => {
@@ -185,6 +216,9 @@ const Login = () => {
           <NaverBtn type="button" onClick={naverLogin}>
             네이버 로그인
           </NaverBtn>
+          <GoogleBtn type="button" onClick={googleLogin}>
+            구글 로그인
+          </GoogleBtn>
         </SocialButtonGroup>
         <SignupText>
           계정이 없으신가요?

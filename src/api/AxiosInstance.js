@@ -175,6 +175,7 @@ AxiosInstance.interceptors.response.use(
       url.includes("/auth/login") ||
       url.includes("/auth/kakao") ||
       url.includes("/auth/naver") ||
+      url.includes("/auth/google") ||
       url.includes("/auth/reissue");
 
     if (
