@@ -5,6 +5,9 @@ import Button from "../Components/common/Button";
 import Input from "../Components/common/Input";
 import AxiosApi from "../api/AxiosApi";
 import { saveAuth } from "../api/AxiosInstance"; // 토큰 저장 및 자동 재발급 예약
+import KakaoLoginImg from "../img/kakao_icon.png";
+import NaverLoginImg from "../img/naver_icon.png";
+import GoogleLoginImg from "../img/google_icon.png";
 
 const Container = styled.div`
   min-height: 100vh;
@@ -37,6 +40,14 @@ const Title = styled.h1`
   color: #333;
 `;
 
+const SideTitle = styled.h1`
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #333;
+`;
+
 const SignupText = styled.p`
   margin-top: 10px;
   text-align: center;
@@ -54,59 +65,20 @@ const SignupText = styled.p`
     }
   }
 `;
-const KakaoBtn = styled.button`
-  width: 100%;
-  height: 50px;
-  color: #191919;
-  background-color: #fee500;
-  font-size: 15px;
-  font-weight: 700;
-  border: none;
-  border-radius: 18px;
-  cursor: pointer;
-`;
-const NaverBtn = styled.button`
-  width: 100%;
-  height: 50px;
-  color: #ffffff;
-  background-color: #03c75a;
-  font-size: 15px;
-  font-weight: 700;
-  border: none;
-  border-radius: 18px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #02b350;
-  }
-`;
-const GoogleBtn = styled.button`
-  width: 100%;
-  height: 50px;
-  color: #333333;
-  background-color: #ffffff;
-  font-size: 15px;
-  font-weight: 700;
-  border: 1px solid #dddddd;
-  border-radius: 18px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #f5f5f5;
-  }
-`;
 const SocialButtonGroup = styled.div`
   display: flex;
   gap: 12px;
   width: 100%;
 
-  button {
+  img {
     flex: 1;
     min-width: 0;
+    width: 0;
+    height: 50px;
+    object-fit: contain;
+    cursor: pointer;
   }
-`;
-
-// 카카오 인가 코드 요청 주소 (client_id = REST API 키, 공개돼도 되는 값)
+`; // 카카오 인가 코드 요청 주소 (client_id = REST API 키, 공개돼도 되는 값)
 const KAKAO_AUTH_URL =
   "https://kauth.kakao.com/oauth/authorize?response_type=code" +
   `&client_id=${process.env.REACT_APP_KAKAO_CLIENT_ID}` +
@@ -205,25 +177,23 @@ const Login = () => {
         <Button type="submit" enabled={isValid}>
           로그인
         </Button>
-        <SocialButtonGroup>
-          <KakaoBtn
-            type="button"
-            onClick={() => (window.location.href = KAKAO_AUTH_URL)}
-          >
-            카카오 로그인
-          </KakaoBtn>
-
-          <NaverBtn type="button" onClick={naverLogin}>
-            네이버 로그인
-          </NaverBtn>
-          <GoogleBtn type="button" onClick={googleLogin}>
-            구글 로그인
-          </GoogleBtn>
-        </SocialButtonGroup>
         <SignupText>
           계정이 없으신가요?
           <Link to="/signup">회원가입</Link>
         </SignupText>
+        <br></br>
+        <SideTitle>간편 로그인</SideTitle>
+        <SocialButtonGroup>
+          <img
+            src={KakaoLoginImg}
+            alt="카카오 로그인"
+            onClick={() => (window.location.href = KAKAO_AUTH_URL)}
+          />
+
+          <img src={NaverLoginImg} alt="네이버 로그인" onClick={naverLogin} />
+
+          <img src={GoogleLoginImg} alt="구글 로그인" onClick={googleLogin} />
+        </SocialButtonGroup>{" "}
       </Form>
     </Container>
   );
