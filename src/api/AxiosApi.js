@@ -41,6 +41,10 @@ const AxiosApi = {
       email,
     }),
 
+  withdrawMember: async () => {
+    return await AxiosInstance.post("/auth/mypage/withdraw");
+  },
+
   boardList: async () => AxiosInstance.get("/board/list"),
 
   boardDetail: async (id) => AxiosInstance.get(`/board/${id}`),
