@@ -25,6 +25,7 @@ import AllConcertMenu from "./pages/AllConcertMenu";
 import KakaoCallback from "./pages/KakaoCallback";
 import NaverCallback from "./pages/NaverCallback.js";
 import GoogleCallback from "./pages/GoogleCallback.js";
+import AiAssistant from "./pages/rag/AiAssistant.js";
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
           <Route path="/mypage/payment" element={<PaymentManage />} />
           <Route path="/payment-register" element={<PaymentRegister />} />
           <Route path="/concertlist" element={<AllConcertMenu />} />
+          <Route path="/ai" element={<AiAssistant />} />
         </Route>
       </Routes>
     </Router>

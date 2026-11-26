@@ -149,6 +149,19 @@ const AxiosApi = {
       code,
     });
   },
+
+  // 게시판 AI 도우미
+  ragChat: async (question, scope) => {
+    return await AxiosInstance.post("/rag/chat", { question, scope });
+  },
+  // 실패한 글 하나 다시 색인
+  ragReindex: async (concertId) => {
+    return await AxiosInstance.post(`/rag/reindex/${concertId}`);
+  },
+  // 전체 재색인 (ROLE_ADMIN 만)
+  reReindexAll: async () => {
+    return await AxiosInstance.post("/rag/reindex");
+  },
 };
 
 export default AxiosApi;
