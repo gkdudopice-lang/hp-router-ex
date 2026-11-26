@@ -26,6 +26,11 @@ import KakaoCallback from "./pages/KakaoCallback";
 import NaverCallback from "./pages/NaverCallback.js";
 import GoogleCallback from "./pages/GoogleCallback.js";
 import AiAssistant from "./pages/rag/AiAssisastant.js";
+import TermsPage from "./pages/Terms";
+import { PaymentCheckoutPage } from "./pages/PaymentCheckout";
+import { WidgetCheckoutPage } from "./pages/widget/WidgetCheckout";
+import { WidgetSuccessPage } from "./pages/widget/WidgetSuccess";
+import { FailPage } from "./pages/Fail";
 
 function App() {
   return (
@@ -70,6 +75,11 @@ function App() {
           <Route path="/payment-register" element={<PaymentRegister />} />
           <Route path="/concertlist" element={<AllConcertMenu />} />
           <Route path="/ai" element={<AiAssistant />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/toss" element={<PaymentCheckoutPage />} />
+          <Route path="/payment/widget" element={<WidgetCheckoutPage />} />
+          <Route path="/payment/success" element={<WidgetSuccessPage />} />
+          <Route path="/payment/fail" element={<FailPage />} />
         </Route>
       </Routes>
     </Router>

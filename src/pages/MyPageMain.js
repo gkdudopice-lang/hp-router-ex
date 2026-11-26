@@ -66,9 +66,9 @@ const StyledLink = styled(Link)`
   }
 `;
 const Button = styled.button`
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: 1px solid #e53935;
-  border-radius: 4px; /* 작은 직사각형 느낌 (각지게 하려면 0px) */
+  border-radius: 9px; /* 작은 직사각형 느낌 (각지게 하려면 0px) */
   background-color: #ffffff;
   color: #e53935;
   font-size: 16px;
@@ -113,6 +113,7 @@ const MyPageMain = () => {
       navigate("/login", { replace: true });
     } catch (error) {
       const data = error.response?.data;
+
       const serverMessage =
         typeof data === "string" ? data : data?.message || data?.error;
 
