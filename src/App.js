@@ -25,7 +25,7 @@ import AllConcertMenu from "./pages/AllConcertMenu";
 import KakaoCallback from "./pages/KakaoCallback";
 import NaverCallback from "./pages/NaverCallback.js";
 import GoogleCallback from "./pages/GoogleCallback.js";
-import AiAssistant from "./pages/rag/AiAssistant.js";
+import AiAssistant from "./pages/rag/AiAssisastant.js";
 
 function App() {
   return (
