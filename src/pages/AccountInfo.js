@@ -98,11 +98,6 @@ const AccountInfo = () => {
           <Label>본인 인증</Label>
           <ArrowButton>&gt;</ArrowButton>
         </Row>
-
-        <Row $clickable onClick={() => navigate("/mypage/payment")}>
-          <Label>결제수단 관리</Label>
-          <ArrowButton>&gt;</ArrowButton>
-        </Row>
       </Box>
     </Container>
   );

@@ -8,7 +8,6 @@ import Signup from "./pages/SignUp";
 import ReservationDetail from "./pages/ReservationDetail";
 import ReservationSelect from "./pages/ReservationSelect";
 import ReservationSeat from "./pages/ReservationSeat";
-import ReservationPayment from "./pages/ReservationPayment";
 import ReviewStars from "./pages/ReviewStars";
 import ReservationHistory from "./pages/ReservationHistory";
 import WishList from "./pages/WishList";
@@ -18,8 +17,6 @@ import MyPageMain from "./pages/MyPageMain";
 import MyReviewList from "./pages/MyReviewList";
 import CustomerCenter from "./pages/CustomerCenter";
 import AccountInfo from "./pages/AccountInfo";
-import PaymentManage from "./pages/PaymentManage";
-import PaymentRegister from "./pages/PaymentRegister";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AllConcertMenu from "./pages/AllConcertMenu";
 import KakaoCallback from "./pages/KakaoCallback";
@@ -58,10 +55,6 @@ function App() {
             element={<ReservationSelect />}
           />
           <Route path="/reservation/seat/:id" element={<ReservationSeat />} />
-          <Route
-            path="/reservation/payment/:id"
-            element={<ReservationPayment />}
-          />
           <Route path="/reservation/review/:id" element={<ReviewStars />} />
           <Route path="/reservation/history" element={<ReservationHistory />} />
           <Route path="/wishlist" element={<WishList />} />
@@ -71,8 +64,6 @@ function App() {
           <Route path="/mypage/reviews" element={<MyReviewList />} />
           <Route path="/mypage/customer-center" element={<CustomerCenter />} />
           <Route path="/mypage/account" element={<AccountInfo />} />
-          <Route path="/mypage/payment" element={<PaymentManage />} />
-          <Route path="/payment-register" element={<PaymentRegister />} />
           <Route path="/concertlist" element={<AllConcertMenu />} />
           <Route path="/ai" element={<AiAssistant />} />
           <Route path="/terms" element={<Terms />} />
