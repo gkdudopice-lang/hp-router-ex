@@ -107,7 +107,7 @@ const InfoRow = styled.div`
 
 const AmountText = styled.b`
   font-size: 23px !important;
-  color: #3182f6 !important;
+  color: #c327eb !important;
 `;
 
 const ResponseBox = styled.div`

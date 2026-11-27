@@ -93,7 +93,7 @@ const OrderInfoItem = styled.div`
 // 결제 금액
 const OrderAmount = styled.b`
   font-size: 22px !important;
-  color: #3182f6 !important;
+  color: #c327eb !important;
 `;
 
 // 토스 결제 UI 바깥쪽
