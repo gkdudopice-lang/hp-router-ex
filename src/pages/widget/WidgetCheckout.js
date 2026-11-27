@@ -298,16 +298,12 @@ export function WidgetCheckoutPage() {
           <OrderInfoBox>
             <OrderInfoItem>
               <span>상품명</span>
-              <b>{reservation?.title ?? "-"}</b>
+              <b>{reservation?.concertTitle ?? "-"}</b>
             </OrderInfoItem>
 
             <OrderInfoItem>
               <span>상품 번호</span>
               <b>{reservation?.concertId ?? "-"}</b>
-            </OrderInfoItem>
-            <OrderInfoItem>
-              <span>회차 번호</span>
-              <b>{sessionId ?? "-"}</b>
             </OrderInfoItem>
 
             <OrderInfoItem>

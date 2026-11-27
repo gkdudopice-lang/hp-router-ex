@@ -179,7 +179,7 @@ const Login = () => {
         </Button>
         <SignupText>
           계정이 없으신가요?
-          <Link to="/signup">회원가입</Link>
+          <Link to="/terms">회원가입</Link>
         </SignupText>
         <br></br>
         <SideTitle>간편 로그인</SideTitle>
